@@ -1,0 +1,110 @@
+[
+  {
+    "Id": "dashboard",
+    "Name": "仪表盘",
+    "Icon": "ViewDashboard",
+    "IsExpanded": false,
+    "IsSelected": false,
+    "Children": []
+  },
+  {
+    "Id": "products",
+    "Name": "商品管理",
+    "Icon": "PackageVariant",
+    "IsExpanded": false,
+    "IsSelected": false,
+    "Children": [
+      {
+        "Id": "product_list",
+        "Name": "商品列表",
+        "Icon": "FormatListBulleted",
+        "IsExpanded": false,
+        "IsSelected": false,
+        "Children": []
+      },
+      {
+        "Id": "product_category",
+        "Name": "商品分类",
+        "Icon": "Folder",
+        "IsExpanded": false,
+        "IsSelected": false,
+        "Children": []
+      }
+    ]
+  },
+  {
+    "Id": "orders",
+    "Name": "订单管理",
+    "Icon": "ClipboardList",
+    "IsExpanded": false,
+    "IsSelected": false,
+    "Children": [
+      {
+        "Id": "order_list",
+        "Name": "订单列表",
+        "Icon": "FormatListBulleted",
+        "IsExpanded": false,
+        "IsSelected": false,
+        "Children": []
+      },
+      {
+        "Id": "order_returns",
+        "Name": "退货申请",
+        "Icon": "PackageDown",
+        "IsExpanded": false,
+        "IsSelected": false,
+        "Children": []
+      }
+    ]
+  },
+  {
+    "Id": "members",
+    "Name": "会员管理",
+    "Icon": "AccountMultiple",
+    "IsExpanded": false,
+    "IsSelected": false,
+    "Children": [
+      {
+        "Id": "member_list",
+        "Name": "会员列表",
+        "Icon": "FormatListBulleted",
+        "IsExpanded": false,
+        "IsSelected": false,
+        "Children": []
+      },
+      {
+        "Id": "member_levels",
+        "Name": "会员等级",
+        "Icon": "Star",
+        "IsExpanded": false,
+        "IsSelected": false,
+        "Children": []
+      }
+    ]
+  },
+  {
+    "Id": "settings",
+    "Name": "系统设置",
+    "Icon": "Cog",
+    "IsExpanded": false,
+    "IsSelected": false,
+    "Children": [
+      {
+        "Id": "user_management",
+        "Name": "用户管理",
+        "Icon": "Account",
+        "IsExpanded": false,
+        "IsSelected": false,
+        "Children": []
+      },
+      {
+        "Id": "role_management",
+        "Name": "角色管理",
+        "Icon": "AccountArrowRight",
+        "IsExpanded": false,
+        "IsSelected": false,
+        "Children": []
+      }
+    ]
+  }
+]

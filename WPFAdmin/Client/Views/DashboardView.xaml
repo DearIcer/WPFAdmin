@@ -1,0 +1,251 @@
+﻿<UserControl x:Class="Client.Views.DashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:models="clr-namespace:Client.Models"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             mc:Ignorable="d"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- 标题区域 -->
+        <TextBlock Grid.Row="0"
+                   Text="仪表盘"
+                   Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+                   Margin="16" />
+
+        <!-- 内容区域 -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <Grid Margin="16">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!-- 统计卡片 -->
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- 销售额卡片 -->
+                    <materialDesign:Card Grid.Column="0" Margin="4">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0"
+                                       Text="销售额"
+                                       Margin="16,16,16,8"
+                                       Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                       Foreground="{DynamicResource MaterialDesignBodyLight}" />
+                            <TextBlock Grid.Row="1"
+                                       Text="¥ 24,569"
+                                       Margin="16,0,16,8"
+                                       Style="{StaticResource MaterialDesignHeadline5TextBlock}" />
+                            <ProgressBar Grid.Row="2"
+                                         Value="75"
+                                         Height="4"
+                                         Margin="0,0,0,0"
+                                         Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                         Style="{StaticResource MaterialDesignLinearProgressBar}" />
+                        </Grid>
+                    </materialDesign:Card>
+
+                    <!-- 订单数卡片 -->
+                    <materialDesign:Card Grid.Column="1" Margin="4">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0"
+                                       Text="订单数"
+                                       Margin="16,16,16,8"
+                                       Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                       Foreground="{DynamicResource MaterialDesignBodyLight}" />
+                            <TextBlock Grid.Row="1"
+                                       Text="1,234"
+                                       Margin="16,0,16,8"
+                                       Style="{StaticResource MaterialDesignHeadline5TextBlock}" />
+                            <ProgressBar Grid.Row="2"
+                                         Value="60"
+                                         Height="4"
+                                         Margin="0,0,0,0"
+                                         Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                         Style="{StaticResource MaterialDesignLinearProgressBar}" />
+                        </Grid>
+                    </materialDesign:Card>
+
+                    <!-- 客户数卡片 -->
+                    <materialDesign:Card Grid.Column="2" Margin="4">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0"
+                                       Text="客户数"
+                                       Margin="16,16,16,8"
+                                       Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                       Foreground="{DynamicResource MaterialDesignBodyLight}" />
+                            <TextBlock Grid.Row="1"
+                                       Text="567"
+                                       Margin="16,0,16,8"
+                                       Style="{StaticResource MaterialDesignHeadline5TextBlock}" />
+                            <ProgressBar Grid.Row="2"
+                                         Value="45"
+                                         Height="4"
+                                         Margin="0,0,0,0"
+                                         Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                         Style="{StaticResource MaterialDesignLinearProgressBar}" />
+                        </Grid>
+                    </materialDesign:Card>
+
+                    <!-- 回访率卡片 -->
+                    <materialDesign:Card Grid.Column="3" Margin="4">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0"
+                                       Text="回访率"
+                                       Margin="16,16,16,8"
+                                       Style="{StaticResource MaterialDesignBody1TextBlock}"
+                                       Foreground="{DynamicResource MaterialDesignBodyLight}" />
+                            <TextBlock Grid.Row="1"
+                                       Text="78%"
+                                       Margin="16,0,16,8"
+                                       Style="{StaticResource MaterialDesignHeadline5TextBlock}" />
+                            <ProgressBar Grid.Row="2"
+                                         Value="78"
+                                         Height="4"
+                                         Margin="0,0,0,0"
+                                         Foreground="{DynamicResource PrimaryHueMidBrush}"
+                                         Style="{StaticResource MaterialDesignLinearProgressBar}" />
+                        </Grid>
+                    </materialDesign:Card>
+                </Grid>
+
+                <!-- 图表和列表区域 -->
+                <Grid Grid.Row="1" Margin="0,16,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*" />
+                        <ColumnDefinition Width="1*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- 销售趋势图 -->
+                    <materialDesign:Card Grid.Column="0" Margin="4">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="200" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0"
+                                       Text="销售趋势"
+                                       Margin="16"
+                                       Style="{StaticResource MaterialDesignBody1TextBlock}" />
+                            <!-- 简化的图表占位 -->
+                            <Grid Grid.Row="1" Background="#f5f5f5">
+                                <Polyline
+                                    Points="0,180 40,150 80,120 120,100 160,130 200,80 240,60 280,90 320,110 360,70 400,50"
+                                    Stroke="{DynamicResource PrimaryHueMidBrush}"
+                                    StrokeThickness="2"
+                                    Margin="16,0" />
+                            </Grid>
+                        </Grid>
+                    </materialDesign:Card>
+
+                    <!-- 待办事项 -->
+                    <materialDesign:Card Grid.Column="1" Margin="4">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="200" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0"
+                                       Text="待办事项"
+                                       Margin="16"
+                                       Style="{StaticResource MaterialDesignBody1TextBlock}" />
+                            <ListView Grid.Row="1">
+                                <ListViewItem>
+                                    <StackPanel Orientation="Horizontal">
+                                        <CheckBox Margin="0,0,8,0" />
+                                        <TextBlock Text="完成月度销售报告" />
+                                    </StackPanel>
+                                </ListViewItem>
+                                <ListViewItem>
+                                    <StackPanel Orientation="Horizontal">
+                                        <CheckBox Margin="0,0,8,0" />
+                                        <TextBlock Text="处理客户投诉" />
+                                    </StackPanel>
+                                </ListViewItem>
+                                <ListViewItem>
+                                    <StackPanel Orientation="Horizontal">
+                                        <CheckBox Margin="0,0,8,0" />
+                                        <TextBlock Text="安排团队会议" />
+                                    </StackPanel>
+                                </ListViewItem>
+                                <ListViewItem>
+                                    <StackPanel Orientation="Horizontal">
+                                        <CheckBox Margin="0,0,8,0" />
+                                        <TextBlock Text="更新产品信息" />
+                                    </StackPanel>
+                                </ListViewItem>
+                            </ListView>
+                        </Grid>
+                    </materialDesign:Card>
+                </Grid>
+
+                <!-- 最近活动 -->
+                <materialDesign:Card Grid.Row="2" Margin="4,16,4,4">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0"
+                                   Text="最近活动"
+                                   Margin="16"
+                                   Style="{StaticResource MaterialDesignBody1TextBlock}" />
+                        <DataGrid Grid.Row="1"
+                                  AutoGenerateColumns="False"
+                                  CanUserAddRows="False"
+                                  IsReadOnly="True"
+                                  Height="200">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="时间" Binding="{Binding Time}" Width="150" />
+                                <DataGridTextColumn Header="用户" Binding="{Binding User}" Width="100" />
+                                <DataGridTextColumn Header="操作" Binding="{Binding Action}" Width="*" />
+                            </DataGrid.Columns>
+                            <DataGrid.ItemsSource>
+                                <x:Array Type="{x:Type models:Activity}">
+                                    <models:Activity Time="2023-06-01 09:30" User="张三" Action="创建新订单 #12345" />
+                                    <models:Activity Time="2023-06-01 10:15" User="李四" Action="更新商品信息" />
+                                    <models:Activity Time="2023-06-01 11:20" User="王五" Action="处理退货申请" />
+                                    <models:Activity Time="2023-06-01 14:05" User="赵六" Action="添加新客户" />
+                                    <models:Activity Time="2023-06-01 15:30" User="孙七" Action="完成订单 #12340" />
+                                </x:Array>
+                            </DataGrid.ItemsSource>
+                        </DataGrid>
+                    </Grid>
+                </materialDesign:Card>
+            </Grid>
+        </ScrollViewer>
+    </Grid>
+</UserControl>
