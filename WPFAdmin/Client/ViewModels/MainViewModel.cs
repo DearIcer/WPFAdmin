@@ -31,7 +31,8 @@ public class MainViewModel : INotifyPropertyChanged
             { "dashboard", () => new DashboardView() },
             { "products", () => new ProductsView() },
             { "menu_management", () => new MenuManagementView() },
-            { "user_management", () => new UserManagementView() }
+            { "user_management", () => new UserManagementView() },
+            { "role_management", () => new RoleManagementView() }
             // 可以在这里添加更多视图
             // { "orders", () => new OrdersView() }
         };
