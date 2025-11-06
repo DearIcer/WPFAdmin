@@ -48,6 +48,7 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
                     <Grid.ColumnDefinitions>
@@ -67,7 +68,19 @@
                     <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding NewItemIcon, UpdateSourceTrigger=PropertyChanged}" 
                              Margin="5" IsEnabled="{Binding IsItemSelected}"/>
 
-                    <Button Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Content="更新菜单项" 
+                    <Label Grid.Row="3" Grid.Column="0" Content="父级:" VerticalAlignment="Center"/>
+                    <ComboBox Grid.Row="3" Grid.Column="1" 
+                              x:Name="EditingParentComboBox"
+                              IsEnabled="{Binding IsEditingParentEnabled}"
+                              Margin="5">
+                        <ComboBox.ItemContainerStyle>
+                            <Style TargetType="ComboBoxItem">
+                                <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                            </Style>
+                        </ComboBox.ItemContainerStyle>
+                    </ComboBox>
+
+                    <Button Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Content="更新菜单项" 
                             Command="{Binding EditCommand}" Margin="5" Padding="10,5"/>
                 </Grid>
             </GroupBox>
@@ -102,9 +115,7 @@
 
                     <Label Grid.Row="3" Grid.Column="0" Content="父级:" VerticalAlignment="Center"/>
                     <ComboBox Grid.Row="3" Grid.Column="1" 
-                              ItemsSource="{Binding MenuItems}" 
-                              DisplayMemberPath="Name"
-                              SelectedItem="{Binding ParentItem}"
+                              x:Name="ParentComboBox"
                               Margin="5">
                         <ComboBox.ItemContainerStyle>
                             <Style TargetType="ComboBoxItem">

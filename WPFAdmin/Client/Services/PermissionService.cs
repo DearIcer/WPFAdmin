@@ -104,7 +104,7 @@ public class PermissionService
         // role_management -> ManageRoles
         // menu_management -> ManageMenus
 
-        var hasPermission = item.Id switch
+        var hasPermission = item.Code switch
         {
             "dashboard" => _userPermissions.Contains("ViewDashboard"),
             "products" or "product_list" or "product_category" => _userPermissions.Contains("ManageProducts"),
@@ -126,6 +126,7 @@ public class PermissionService
         var filteredItem = new MenuItem
         {
             Id = item.Id,
+            Code = item.Code,
             Name = item.Name,
             Icon = item.Icon,
             IsExpanded = item.IsExpanded,
@@ -163,6 +164,7 @@ public class PermissionService
             new()
             {
                 Id = "dashboard",
+                Code = "dashboard",
                 Name = "仪表盘",
                 Icon = "ViewDashboard",
                 Children = new System.Collections.ObjectModel.ObservableCollection<MenuItem>()
@@ -170,46 +172,50 @@ public class PermissionService
             new()
             {
                 Id = "products",
+                Code = "products",
                 Name = "商品管理",
                 Icon = "PackageVariant",
                 Children = new System.Collections.ObjectModel.ObservableCollection<MenuItem>
                 {
-                    new() { Id = "product_list", Name = "商品列表", Icon = "FormatListBulleted" },
-                    new() { Id = "product_category", Name = "商品分类", Icon = "Folder" }
+                    new() { Id = "product_list", Code = "product_list", Name = "商品列表", Icon = "FormatListBulleted" },
+                    new() { Id = "product_category", Code = "product_category", Name = "商品分类", Icon = "Folder" }
                 }
             },
             new()
             {
                 Id = "orders",
+                Code = "orders",
                 Name = "订单管理",
                 Icon = "ClipboardList",
                 Children = new System.Collections.ObjectModel.ObservableCollection<MenuItem>
                 {
-                    new() { Id = "order_list", Name = "订单列表", Icon = "FormatListBulleted" },
-                    new() { Id = "order_returns", Name = "退货申请", Icon = "PackageDown" }
+                    new() { Id = "order_list", Code = "order_list", Name = "订单列表", Icon = "FormatListBulleted" },
+                    new() { Id = "order_returns", Code = "order_returns", Name = "退货申请", Icon = "PackageDown" }
                 }
             },
             new()
             {
                 Id = "members",
+                Code = "members",
                 Name = "会员管理",
                 Icon = "AccountMultiple",
                 Children = new System.Collections.ObjectModel.ObservableCollection<MenuItem>
                 {
-                    new() { Id = "member_list", Name = "会员列表", Icon = "FormatListBulleted" },
-                    new() { Id = "member_levels", Name = "会员等级", Icon = "Star" }
+                    new() { Id = "member_list", Code = "member_list", Name = "会员列表", Icon = "FormatListBulleted" },
+                    new() { Id = "member_levels", Code = "member_levels", Name = "会员等级", Icon = "Star" }
                 }
             },
             new()
             {
                 Id = "settings",
+                Code = "settings",
                 Name = "系统设置",
                 Icon = "Cog",
                 Children = new System.Collections.ObjectModel.ObservableCollection<MenuItem>
                 {
-                    new() { Id = "user_management", Name = "用户管理", Icon = "Account" },
-                    new() { Id = "role_management", Name = "角色管理", Icon = "AccountArrowRight" },
-                    new() { Id = "menu_management", Name = "菜单管理", Icon = "Menu" }
+                    new() { Id = "user_management", Code = "user_management", Name = "用户管理", Icon = "Account" },
+                    new() { Id = "role_management", Code = "role_management", Name = "角色管理", Icon = "AccountArrowRight" },
+                    new() { Id = "menu_management", Code = "menu_management", Name = "菜单管理", Icon = "Menu" }
                 }
             }
         };

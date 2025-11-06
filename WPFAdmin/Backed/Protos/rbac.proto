@@ -34,6 +34,14 @@ service RBACService {
   // User-role operations
   rpc GetUserRoles (GetUserRolesRequest) returns (GetUserRolesResponse);
   rpc GetUserPermissions (GetUserPermissionsRequest) returns (GetUserPermissionsResponse);
+  
+  // Menu operations
+  rpc GetAllMenus (GetAllMenusRequest) returns (GetAllMenusResponse);
+  rpc GetMenu (GetMenuRequest) returns (GetMenuResponse);
+  rpc CreateMenu (CreateMenuRequest) returns (CreateMenuResponse);
+  rpc UpdateMenu (UpdateMenuRequest) returns (UpdateMenuResponse);
+  rpc DeleteMenu (DeleteMenuRequest) returns (DeleteMenuResponse);
+  rpc GetMenuTree (GetMenuTreeRequest) returns (GetMenuTreeResponse);
 }
 
 // User messages
@@ -62,6 +70,21 @@ message Permission {
   string description = 3;
   int64 created_at = 4;
   int64 updated_at = 5;
+}
+
+// Menu messages
+message Menu {
+  int32 id = 1;
+  string name = 2;
+  string code = 3;
+  string path = 4;
+  string icon = 5;
+  int32 parent_id = 6;
+  int32 sort_order = 7;
+  bool is_active = 8;
+  int64 created_at = 9;
+  int64 updated_at = 10;
+  repeated Menu children = 11;
 }
 
 // AuthenticateUser
@@ -289,4 +312,66 @@ message GetUserPermissionsResponse {
   bool success = 1;
   string message = 2;
   repeated Permission permissions = 3;
+}
+
+// Menu operations messages
+message GetAllMenusRequest {}
+
+message GetAllMenusResponse {
+  bool success = 1;
+  string message = 2;
+  repeated Menu menus = 3;
+}
+
+message GetMenuRequest {
+  int32 id = 1;
+}
+
+message GetMenuResponse {
+  bool success = 1;
+  string message = 2;
+  Menu menu = 3;
+}
+
+message CreateMenuRequest {
+  string name = 1;
+  string code = 2;
+  string path = 3;
+  string icon = 4;
+  int32 parent_id = 5;
+  int32 sort_order = 6;
+  bool is_active = 7;
+}
+
+message CreateMenuResponse {
+  bool success = 1;
+  string message = 2;
+  Menu menu = 3;
+}
+
+message UpdateMenuRequest {
+  Menu menu = 1;
+}
+
+message UpdateMenuResponse {
+  bool success = 1;
+  string message = 2;
+  Menu menu = 3;
+}
+
+message DeleteMenuRequest {
+  int32 id = 1;
+}
+
+message DeleteMenuResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message GetMenuTreeRequest {}
+
+message GetMenuTreeResponse {
+  bool success = 1;
+  string message = 2;
+  repeated Menu menus = 3;
 }

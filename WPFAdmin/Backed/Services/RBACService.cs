@@ -10,16 +10,19 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
     private readonly IPermissionService _permissionService;
     private readonly IRoleService _roleService;
     private readonly IUserService _userService;
+    private readonly IMenuService _menuService;
 
     public RBACService(
         IUserService userService,
         IRoleService roleService,
         IPermissionService permissionService,
+        IMenuService menuService,
         ILogger<RBACService> logger)
     {
         _userService = userService;
         _roleService = roleService;
         _permissionService = permissionService;
+        _menuService = menuService;
         _logger = logger;
     }
 
@@ -607,6 +610,175 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         }
     }
 
+    // Menu operations
+    public override async Task<Backed.Grpc.GetAllMenusResponse> GetAllMenus(
+        Backed.Grpc.GetAllMenusRequest request, ServerCallContext context)
+    {
+        try
+        {
+            var menus = await _menuService.GetAllAsync();
+
+            return new Backed.Grpc.GetAllMenusResponse
+            {
+                Success = true,
+                Message = "Menus retrieved successfully",
+                Menus = { menus.Select(MapToGrpcMenu) }
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving all menus");
+            return new Backed.Grpc.GetAllMenusResponse
+            {
+                Success = false,
+                Message = "An error occurred while retrieving menus"
+            };
+        }
+    }
+
+    public override async Task<Backed.Grpc.GetMenuResponse> GetMenu(
+        Backed.Grpc.GetMenuRequest request, ServerCallContext context)
+    {
+        try
+        {
+            var menu = await _menuService.GetByIdAsync(request.Id);
+
+            if (menu == null)
+                return new Backed.Grpc.GetMenuResponse
+                {
+                    Success = false,
+                    Message = "Menu not found"
+                };
+
+            return new Backed.Grpc.GetMenuResponse
+            {
+                Success = true,
+                Message = "Menu retrieved successfully",
+                Menu = MapToGrpcMenu(menu)
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving menu {MenuId}", request.Id);
+            return new Backed.Grpc.GetMenuResponse
+            {
+                Success = false,
+                Message = "An error occurred while retrieving the menu"
+            };
+        }
+    }
+
+    public override async Task<Backed.Grpc.CreateMenuResponse> CreateMenu(
+        Backed.Grpc.CreateMenuRequest request, ServerCallContext context)
+    {
+        try
+        {
+            var menu = new Menu
+            {
+                Name = request.Name,
+                Code = request.Code,
+                Path = request.Path,
+                Icon = request.Icon,
+                ParentId = request.ParentId,
+                SortOrder = request.SortOrder,
+                IsActive = request.IsActive
+            };
+
+            var createdMenu = await _menuService.CreateAsync(menu);
+
+            return new Backed.Grpc.CreateMenuResponse
+            {
+                Success = true,
+                Message = "Menu created successfully",
+                Menu = MapToGrpcMenu(createdMenu)
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating menu {MenuName}", request.Name);
+            return new Backed.Grpc.CreateMenuResponse
+            {
+                Success = false,
+                Message = "An error occurred while creating the menu"
+            };
+        }
+    }
+
+    public override async Task<Backed.Grpc.UpdateMenuResponse> UpdateMenu(
+        Backed.Grpc.UpdateMenuRequest request, ServerCallContext context)
+    {
+        try
+        {
+            var menu = MapToDomainMenu(request.Menu);
+            await _menuService.UpdateAsync(menu);
+
+            return new Backed.Grpc.UpdateMenuResponse
+            {
+                Success = true,
+                Message = "Menu updated successfully",
+                Menu = MapToGrpcMenu(menu)
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating menu {MenuId}", request.Menu.Id);
+            return new Backed.Grpc.UpdateMenuResponse
+            {
+                Success = false,
+                Message = "An error occurred while updating the menu"
+            };
+        }
+    }
+
+    public override async Task<Backed.Grpc.DeleteMenuResponse> DeleteMenu(
+        Backed.Grpc.DeleteMenuRequest request, ServerCallContext context)
+    {
+        try
+        {
+            await _menuService.DeleteAsync(request.Id);
+
+            return new Backed.Grpc.DeleteMenuResponse
+            {
+                Success = true,
+                Message = "Menu deleted successfully"
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting menu {MenuId}", request.Id);
+            return new Backed.Grpc.DeleteMenuResponse
+            {
+                Success = false,
+                Message = "An error occurred while deleting the menu"
+            };
+        }
+    }
+
+    public override async Task<Backed.Grpc.GetMenuTreeResponse> GetMenuTree(
+        Backed.Grpc.GetMenuTreeRequest request, ServerCallContext context)
+    {
+        try
+        {
+            var menus = await _menuService.GetMenuTreeAsync();
+
+            return new Backed.Grpc.GetMenuTreeResponse
+            {
+                Success = true,
+                Message = "Menu tree retrieved successfully",
+                Menus = { menus.Select(MapToGrpcMenu) }
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving menu tree");
+            return new Backed.Grpc.GetMenuTreeResponse
+            {
+                Success = false,
+                Message = "An error occurred while retrieving menu tree"
+            };
+        }
+    }
+
     // Mapping methods
     private Backed.Grpc.User MapToGrpcUser(User user)
     {
@@ -681,5 +853,55 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
             CreatedAt = DateTimeOffset.FromUnixTimeSeconds(permission.CreatedAt).UtcDateTime,
             UpdatedAt = DateTimeOffset.FromUnixTimeSeconds(permission.UpdatedAt).UtcDateTime
         };
+    }
+
+    private Backed.Grpc.Menu MapToGrpcMenu(Menu menu)
+    {
+        var grpcMenu = new Backed.Grpc.Menu
+        {
+            Id = menu.Id,
+            Name = menu.Name,
+            Code = menu.Code,
+            Path = menu.Path ?? "",
+            Icon = menu.Icon ?? "",
+            ParentId = menu.ParentId ?? 0,
+            SortOrder = menu.SortOrder,
+            IsActive = menu.IsActive,
+            CreatedAt = ((DateTimeOffset)menu.CreatedAt).ToUnixTimeSeconds(),
+            UpdatedAt = ((DateTimeOffset)menu.UpdatedAt).ToUnixTimeSeconds()
+        };
+
+        // Map children recursively
+        foreach (var child in menu.Children)
+        {
+            grpcMenu.Children.Add(MapToGrpcMenu(child));
+        }
+
+        return grpcMenu;
+    }
+
+    private Menu MapToDomainMenu(Backed.Grpc.Menu menu)
+    {
+        var domainMenu = new Menu
+        {
+            Id = menu.Id,
+            Name = menu.Name,
+            Code = menu.Code,
+            Path = string.IsNullOrEmpty(menu.Path) ? null : menu.Path,
+            Icon = string.IsNullOrEmpty(menu.Icon) ? null : menu.Icon,
+            ParentId = menu.ParentId == 0 ? null : menu.ParentId,
+            SortOrder = menu.SortOrder,
+            IsActive = menu.IsActive,
+            CreatedAt = DateTimeOffset.FromUnixTimeSeconds(menu.CreatedAt).UtcDateTime,
+            UpdatedAt = DateTimeOffset.FromUnixTimeSeconds(menu.UpdatedAt).UtcDateTime
+        };
+
+        // Map children recursively
+        foreach (var child in menu.Children)
+        {
+            domainMenu.Children.Add(MapToDomainMenu(child));
+        }
+
+        return domainMenu;
     }
 }
