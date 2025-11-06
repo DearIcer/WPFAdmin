@@ -29,7 +29,8 @@ public class MainViewModel : INotifyPropertyChanged
         _viewFactory = new Dictionary<string, Func<object>>(StringComparer.OrdinalIgnoreCase)
         {
             { "dashboard", () => new DashboardView() },
-            { "products", () => new ProductsView() }
+            { "products", () => new ProductsView() },
+            { "menu_management", () => new MenuManagementView() }
             // 可以在这里添加更多视图
             // { "orders", () => new OrdersView() }
         };

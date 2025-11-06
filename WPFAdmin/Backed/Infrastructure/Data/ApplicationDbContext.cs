@@ -103,6 +103,11 @@ public class ApplicationDbContext : DbContext
             {
                 Id = 4, Name = "ManageProducts", Description = "Can manage products", CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
+            },
+            new Permission
+            {
+                Id = 5, Name = "ManageMenus", Description = "Can manage menus", CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
             }
         );
 
@@ -117,6 +122,8 @@ public class ApplicationDbContext : DbContext
                 { Id = 3, RoleId = 1, PermissionId = 3, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
             new RolePermission
                 { Id = 4, RoleId = 1, PermissionId = 4, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+            new RolePermission
+                { Id = 7, RoleId = 1, PermissionId = 5, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
 
             // User role has limited permissions
             new RolePermission

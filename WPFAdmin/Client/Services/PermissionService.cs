@@ -22,7 +22,8 @@ public class PermissionService
             "ManageOrders",
             "ManageMembers",
             "ManageUsers",
-            "ManageRoles"
+            "ManageRoles",
+            "ManageMenus"
         };
         
         // 初始化gRPC客户端
@@ -101,6 +102,7 @@ public class PermissionService
         // members, member_list, member_levels -> ManageMembers
         // user_management -> ManageUsers
         // role_management -> ManageRoles
+        // menu_management -> ManageMenus
 
         var hasPermission = item.Id switch
         {
@@ -110,6 +112,7 @@ public class PermissionService
             "members" or "member_list" or "member_levels" => _userPermissions.Contains("ManageMembers"),
             "user_management" => _userPermissions.Contains("ManageUsers"),
             "role_management" => _userPermissions.Contains("ManageRoles"),
+            "menu_management" => _userPermissions.Contains("ManageMenus"),
             _ => false
         };
 
@@ -205,7 +208,8 @@ public class PermissionService
                 Children = new System.Collections.ObjectModel.ObservableCollection<MenuItem>
                 {
                     new() { Id = "user_management", Name = "用户管理", Icon = "Account" },
-                    new() { Id = "role_management", Name = "角色管理", Icon = "AccountArrowRight" }
+                    new() { Id = "role_management", Name = "角色管理", Icon = "AccountArrowRight" },
+                    new() { Id = "menu_management", Name = "菜单管理", Icon = "Menu" }
                 }
             }
         };
