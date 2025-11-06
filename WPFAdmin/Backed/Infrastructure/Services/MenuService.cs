@@ -33,8 +33,12 @@ public class MenuService : IMenuService
 
     public async Task UpdateAsync(Menu menu)
     {
-        _context.Menus.Update(menu);
-        await _context.SaveChangesAsync();
+        var existingMenu = await _context.Menus.FindAsync(menu.Id);
+        if (existingMenu != null)
+        {
+            _context.Entry(existingMenu).CurrentValues.SetValues(menu);
+            await _context.SaveChangesAsync();
+        }
     }
 
     public async Task DeleteAsync(int id)
@@ -58,6 +62,7 @@ public class MenuService : IMenuService
     public async Task<IEnumerable<Menu>> GetMenuTreeAsync()
     {
         var menus = await _context.Menus
+            .Include(m => m.Children)
             .Where(m => m.IsActive)
             .OrderBy(m => m.SortOrder)
             .ToListAsync();
@@ -65,6 +70,12 @@ public class MenuService : IMenuService
         // Build the tree structure
         var topLevelMenus = menus.Where(m => m.ParentId == null).ToList();
         var menuDict = menus.ToDictionary(m => m.Id);
+
+        // Clear children collections to ensure clean state
+        foreach (var menu in menus)
+        {
+            menu.Children.Clear();
+        }
 
         foreach (var menu in menus)
         {

@@ -1,10 +1,14 @@
-using Backed.Domain.Entities;
 using Backed.Domain.Interfaces;
+using Backed.Grpc;
 using Grpc.Core;
+using Menu = Backed.Domain.Entities.Menu;
+using Permission = Backed.Domain.Entities.Permission;
+using Role = Backed.Domain.Entities.Role;
+using User = Backed.Domain.Entities.User;
 
 namespace Backed.Services;
 
-public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
+public class RBACService : Grpc.RBACService.RBACServiceBase
 {
     private readonly ILogger<RBACService> _logger;
     private readonly IPermissionService _permissionService;
@@ -27,21 +31,21 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
     }
 
     // User operations
-    public override async Task<Backed.Grpc.AuthenticateUserResponse> AuthenticateUser(
-        Backed.Grpc.AuthenticateUserRequest request, ServerCallContext context)
+    public override async Task<AuthenticateUserResponse> AuthenticateUser(
+        AuthenticateUserRequest request, ServerCallContext context)
     {
         try
         {
             var user = await _userService.AuthenticateAsync(request.Username, request.Password);
 
             if (user == null)
-                return new Backed.Grpc.AuthenticateUserResponse
+                return new AuthenticateUserResponse
                 {
                     Success = false,
                     Message = "Invalid username or password"
                 };
 
-            return new Backed.Grpc.AuthenticateUserResponse
+            return new AuthenticateUserResponse
             {
                 Success = true,
                 Message = "Authentication successful",
@@ -51,7 +55,7 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error authenticating user {Username}", request.Username);
-            return new Backed.Grpc.AuthenticateUserResponse
+            return new AuthenticateUserResponse
             {
                 Success = false,
                 Message = "An error occurred during authentication"
@@ -59,7 +63,7 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         }
     }
 
-    public override async Task<Backed.Grpc.GetUserResponse> GetUser(Backed.Grpc.GetUserRequest request,
+    public override async Task<GetUserResponse> GetUser(GetUserRequest request,
         ServerCallContext context)
     {
         try
@@ -67,13 +71,13 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
             var user = await _userService.GetByIdAsync(request.Id);
 
             if (user == null)
-                return new Backed.Grpc.GetUserResponse
+                return new GetUserResponse
                 {
                     Success = false,
                     Message = "User not found"
                 };
 
-            return new Backed.Grpc.GetUserResponse
+            return new GetUserResponse
             {
                 Success = true,
                 Message = "User retrieved successfully",
@@ -83,7 +87,7 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving user {UserId}", request.Id);
-            return new Backed.Grpc.GetUserResponse
+            return new GetUserResponse
             {
                 Success = false,
                 Message = "An error occurred while retrieving the user"
@@ -91,14 +95,14 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         }
     }
 
-    public override async Task<Backed.Grpc.GetAllUsersResponse> GetAllUsers(
-        Backed.Grpc.GetAllUsersRequest request, ServerCallContext context)
+    public override async Task<GetAllUsersResponse> GetAllUsers(
+        GetAllUsersRequest request, ServerCallContext context)
     {
         try
         {
             var users = await _userService.GetAllAsync();
 
-            return new Backed.Grpc.GetAllUsersResponse
+            return new GetAllUsersResponse
             {
                 Success = true,
                 Message = "Users retrieved successfully",
@@ -108,7 +112,7 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving all users");
-            return new Backed.Grpc.GetAllUsersResponse
+            return new GetAllUsersResponse
             {
                 Success = false,
                 Message = "An error occurred while retrieving users"
@@ -116,14 +120,14 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         }
     }
 
-    public override async Task<Backed.Grpc.CreateUserResponse> CreateUser(
-        Backed.Grpc.CreateUserRequest request, ServerCallContext context)
+    public override async Task<CreateUserResponse> CreateUser(
+        CreateUserRequest request, ServerCallContext context)
     {
         try
         {
             // Check if user already exists
             if (await _userService.UserExistsAsync(request.Username))
-                return new Backed.Grpc.CreateUserResponse
+                return new CreateUserResponse
                 {
                     Success = false,
                     Message = "User with this username already exists"
@@ -138,7 +142,7 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
 
             var createdUser = await _userService.CreateAsync(user, request.Password);
 
-            return new Backed.Grpc.CreateUserResponse
+            return new CreateUserResponse
             {
                 Success = true,
                 Message = "User created successfully",
@@ -148,7 +152,7 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating user {Username}", request.Username);
-            return new Backed.Grpc.CreateUserResponse
+            return new CreateUserResponse
             {
                 Success = false,
                 Message = "An error occurred while creating the user"
@@ -156,15 +160,15 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         }
     }
 
-    public override async Task<Backed.Grpc.UpdateUserResponse> UpdateUser(
-        Backed.Grpc.UpdateUserRequest request, ServerCallContext context)
+    public override async Task<UpdateUserResponse> UpdateUser(
+        UpdateUserRequest request, ServerCallContext context)
     {
         try
         {
             var user = MapToDomainUser(request.User);
             await _userService.UpdateAsync(user);
 
-            return new Backed.Grpc.UpdateUserResponse
+            return new UpdateUserResponse
             {
                 Success = true,
                 Message = "User updated successfully",
@@ -174,7 +178,7 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating user {UserId}", request.User.Id);
-            return new Backed.Grpc.UpdateUserResponse
+            return new UpdateUserResponse
             {
                 Success = false,
                 Message = "An error occurred while updating the user"
@@ -182,14 +186,14 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         }
     }
 
-    public override async Task<Backed.Grpc.DeleteUserResponse> DeleteUser(
-        Backed.Grpc.DeleteUserRequest request, ServerCallContext context)
+    public override async Task<DeleteUserResponse> DeleteUser(
+        DeleteUserRequest request, ServerCallContext context)
     {
         try
         {
             await _userService.DeleteAsync(request.Id);
 
-            return new Backed.Grpc.DeleteUserResponse
+            return new DeleteUserResponse
             {
                 Success = true,
                 Message = "User deleted successfully"
@@ -198,7 +202,7 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting user {UserId}", request.Id);
-            return new Backed.Grpc.DeleteUserResponse
+            return new DeleteUserResponse
             {
                 Success = false,
                 Message = "An error occurred while deleting the user"
@@ -207,7 +211,7 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
     }
 
     // Role operations
-    public override async Task<Backed.Grpc.GetRoleResponse> GetRole(Backed.Grpc.GetRoleRequest request,
+    public override async Task<GetRoleResponse> GetRole(GetRoleRequest request,
         ServerCallContext context)
     {
         try
@@ -215,13 +219,13 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
             var role = await _roleService.GetByIdAsync(request.Id);
 
             if (role == null)
-                return new Backed.Grpc.GetRoleResponse
+                return new GetRoleResponse
                 {
                     Success = false,
                     Message = "Role not found"
                 };
 
-            return new Backed.Grpc.GetRoleResponse
+            return new GetRoleResponse
             {
                 Success = true,
                 Message = "Role retrieved successfully",
@@ -231,7 +235,7 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving role {RoleId}", request.Id);
-            return new Backed.Grpc.GetRoleResponse
+            return new GetRoleResponse
             {
                 Success = false,
                 Message = "An error occurred while retrieving the role"
@@ -239,14 +243,14 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         }
     }
 
-    public override async Task<Backed.Grpc.GetAllRolesResponse> GetAllRoles(
-        Backed.Grpc.GetAllRolesRequest request, ServerCallContext context)
+    public override async Task<GetAllRolesResponse> GetAllRoles(
+        GetAllRolesRequest request, ServerCallContext context)
     {
         try
         {
             var roles = await _roleService.GetAllAsync();
 
-            return new Backed.Grpc.GetAllRolesResponse
+            return new GetAllRolesResponse
             {
                 Success = true,
                 Message = "Roles retrieved successfully",
@@ -256,7 +260,7 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving all roles");
-            return new Backed.Grpc.GetAllRolesResponse
+            return new GetAllRolesResponse
             {
                 Success = false,
                 Message = "An error occurred while retrieving roles"
@@ -264,8 +268,8 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         }
     }
 
-    public override async Task<Backed.Grpc.CreateRoleResponse> CreateRole(
-        Backed.Grpc.CreateRoleRequest request, ServerCallContext context)
+    public override async Task<CreateRoleResponse> CreateRole(
+        CreateRoleRequest request, ServerCallContext context)
     {
         try
         {
@@ -277,7 +281,7 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
 
             var createdRole = await _roleService.CreateAsync(role);
 
-            return new Backed.Grpc.CreateRoleResponse
+            return new CreateRoleResponse
             {
                 Success = true,
                 Message = "Role created successfully",
@@ -287,7 +291,7 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating role {RoleName}", request.Name);
-            return new Backed.Grpc.CreateRoleResponse
+            return new CreateRoleResponse
             {
                 Success = false,
                 Message = "An error occurred while creating the role"
@@ -295,15 +299,15 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         }
     }
 
-    public override async Task<Backed.Grpc.UpdateRoleResponse> UpdateRole(
-        Backed.Grpc.UpdateRoleRequest request, ServerCallContext context)
+    public override async Task<UpdateRoleResponse> UpdateRole(
+        UpdateRoleRequest request, ServerCallContext context)
     {
         try
         {
             var role = MapToDomainRole(request.Role);
             await _roleService.UpdateAsync(role);
 
-            return new Backed.Grpc.UpdateRoleResponse
+            return new UpdateRoleResponse
             {
                 Success = true,
                 Message = "Role updated successfully",
@@ -313,7 +317,7 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating role {RoleId}", request.Role.Id);
-            return new Backed.Grpc.UpdateRoleResponse
+            return new UpdateRoleResponse
             {
                 Success = false,
                 Message = "An error occurred while updating the role"
@@ -321,14 +325,14 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         }
     }
 
-    public override async Task<Backed.Grpc.DeleteRoleResponse> DeleteRole(
-        Backed.Grpc.DeleteRoleRequest request, ServerCallContext context)
+    public override async Task<DeleteRoleResponse> DeleteRole(
+        DeleteRoleRequest request, ServerCallContext context)
     {
         try
         {
             await _roleService.DeleteAsync(request.Id);
 
-            return new Backed.Grpc.DeleteRoleResponse
+            return new DeleteRoleResponse
             {
                 Success = true,
                 Message = "Role deleted successfully"
@@ -337,7 +341,7 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting role {RoleId}", request.Id);
-            return new Backed.Grpc.DeleteRoleResponse
+            return new DeleteRoleResponse
             {
                 Success = false,
                 Message = "An error occurred while deleting the role"
@@ -345,14 +349,14 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         }
     }
 
-    public override async Task<Backed.Grpc.GetRolePermissionsResponse> GetRolePermissions(
-        Backed.Grpc.GetRolePermissionsRequest request, ServerCallContext context)
+    public override async Task<GetRolePermissionsResponse> GetRolePermissions(
+        GetRolePermissionsRequest request, ServerCallContext context)
     {
         try
         {
             var permissions = await _roleService.GetRolePermissionsAsync(request.RoleId);
 
-            return new Backed.Grpc.GetRolePermissionsResponse
+            return new GetRolePermissionsResponse
             {
                 Success = true,
                 Message = "Role permissions retrieved successfully",
@@ -362,7 +366,7 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving permissions for role {RoleId}", request.RoleId);
-            return new Backed.Grpc.GetRolePermissionsResponse
+            return new GetRolePermissionsResponse
             {
                 Success = false,
                 Message = "An error occurred while retrieving role permissions"
@@ -370,14 +374,14 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         }
     }
 
-    public override async Task<Backed.Grpc.AssignPermissionToRoleResponse> AssignPermissionToRole(
-        Backed.Grpc.AssignPermissionToRoleRequest request, ServerCallContext context)
+    public override async Task<AssignPermissionToRoleResponse> AssignPermissionToRole(
+        AssignPermissionToRoleRequest request, ServerCallContext context)
     {
         try
         {
             await _roleService.AssignPermissionAsync(request.RoleId, request.PermissionId);
 
-            return new Backed.Grpc.AssignPermissionToRoleResponse
+            return new AssignPermissionToRoleResponse
             {
                 Success = true,
                 Message = "Permission assigned to role successfully"
@@ -387,7 +391,7 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         {
             _logger.LogError(ex, "Error assigning permission {PermissionId} to role {RoleId}",
                 request.PermissionId, request.RoleId);
-            return new Backed.Grpc.AssignPermissionToRoleResponse
+            return new AssignPermissionToRoleResponse
             {
                 Success = false,
                 Message = "An error occurred while assigning permission to role"
@@ -395,14 +399,14 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         }
     }
 
-    public override async Task<Backed.Grpc.RemovePermissionFromRoleResponse> RemovePermissionFromRole(
-        Backed.Grpc.RemovePermissionFromRoleRequest request, ServerCallContext context)
+    public override async Task<RemovePermissionFromRoleResponse> RemovePermissionFromRole(
+        RemovePermissionFromRoleRequest request, ServerCallContext context)
     {
         try
         {
             await _roleService.RemovePermissionAsync(request.RoleId, request.PermissionId);
 
-            return new Backed.Grpc.RemovePermissionFromRoleResponse
+            return new RemovePermissionFromRoleResponse
             {
                 Success = true,
                 Message = "Permission removed from role successfully"
@@ -412,7 +416,7 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         {
             _logger.LogError(ex, "Error removing permission {PermissionId} from role {RoleId}",
                 request.PermissionId, request.RoleId);
-            return new Backed.Grpc.RemovePermissionFromRoleResponse
+            return new RemovePermissionFromRoleResponse
             {
                 Success = false,
                 Message = "An error occurred while removing permission from role"
@@ -421,21 +425,21 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
     }
 
     // Permission operations
-    public override async Task<Backed.Grpc.GetPermissionResponse> GetPermission(
-        Backed.Grpc.GetPermissionRequest request, ServerCallContext context)
+    public override async Task<GetPermissionResponse> GetPermission(
+        GetPermissionRequest request, ServerCallContext context)
     {
         try
         {
             var permission = await _permissionService.GetByIdAsync(request.Id);
 
             if (permission == null)
-                return new Backed.Grpc.GetPermissionResponse
+                return new GetPermissionResponse
                 {
                     Success = false,
                     Message = "Permission not found"
                 };
 
-            return new Backed.Grpc.GetPermissionResponse
+            return new GetPermissionResponse
             {
                 Success = true,
                 Message = "Permission retrieved successfully",
@@ -445,7 +449,7 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving permission {PermissionId}", request.Id);
-            return new Backed.Grpc.GetPermissionResponse
+            return new GetPermissionResponse
             {
                 Success = false,
                 Message = "An error occurred while retrieving the permission"
@@ -453,14 +457,14 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         }
     }
 
-    public override async Task<Backed.Grpc.GetAllPermissionsResponse> GetAllPermissions(
-        Backed.Grpc.GetAllPermissionsRequest request, ServerCallContext context)
+    public override async Task<GetAllPermissionsResponse> GetAllPermissions(
+        GetAllPermissionsRequest request, ServerCallContext context)
     {
         try
         {
             var permissions = await _permissionService.GetAllAsync();
 
-            return new Backed.Grpc.GetAllPermissionsResponse
+            return new GetAllPermissionsResponse
             {
                 Success = true,
                 Message = "Permissions retrieved successfully",
@@ -470,7 +474,7 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving all permissions");
-            return new Backed.Grpc.GetAllPermissionsResponse
+            return new GetAllPermissionsResponse
             {
                 Success = false,
                 Message = "An error occurred while retrieving permissions"
@@ -478,8 +482,8 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         }
     }
 
-    public override async Task<Backed.Grpc.CreatePermissionResponse> CreatePermission(
-        Backed.Grpc.CreatePermissionRequest request, ServerCallContext context)
+    public override async Task<CreatePermissionResponse> CreatePermission(
+        CreatePermissionRequest request, ServerCallContext context)
     {
         try
         {
@@ -491,7 +495,7 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
 
             var createdPermission = await _permissionService.CreateAsync(permission);
 
-            return new Backed.Grpc.CreatePermissionResponse
+            return new CreatePermissionResponse
             {
                 Success = true,
                 Message = "Permission created successfully",
@@ -501,7 +505,7 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating permission {PermissionName}", request.Name);
-            return new Backed.Grpc.CreatePermissionResponse
+            return new CreatePermissionResponse
             {
                 Success = false,
                 Message = "An error occurred while creating the permission"
@@ -509,15 +513,15 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         }
     }
 
-    public override async Task<Backed.Grpc.UpdatePermissionResponse> UpdatePermission(
-        Backed.Grpc.UpdatePermissionRequest request, ServerCallContext context)
+    public override async Task<UpdatePermissionResponse> UpdatePermission(
+        UpdatePermissionRequest request, ServerCallContext context)
     {
         try
         {
             var permission = MapToDomainPermission(request.Permission);
             await _permissionService.UpdateAsync(permission);
 
-            return new Backed.Grpc.UpdatePermissionResponse
+            return new UpdatePermissionResponse
             {
                 Success = true,
                 Message = "Permission updated successfully",
@@ -527,7 +531,7 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating permission {PermissionId}", request.Permission.Id);
-            return new Backed.Grpc.UpdatePermissionResponse
+            return new UpdatePermissionResponse
             {
                 Success = false,
                 Message = "An error occurred while updating the permission"
@@ -535,14 +539,14 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         }
     }
 
-    public override async Task<Backed.Grpc.DeletePermissionResponse> DeletePermission(
-        Backed.Grpc.DeletePermissionRequest request, ServerCallContext context)
+    public override async Task<DeletePermissionResponse> DeletePermission(
+        DeletePermissionRequest request, ServerCallContext context)
     {
         try
         {
             await _permissionService.DeleteAsync(request.Id);
 
-            return new Backed.Grpc.DeletePermissionResponse
+            return new DeletePermissionResponse
             {
                 Success = true,
                 Message = "Permission deleted successfully"
@@ -551,7 +555,7 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting permission {PermissionId}", request.Id);
-            return new Backed.Grpc.DeletePermissionResponse
+            return new DeletePermissionResponse
             {
                 Success = false,
                 Message = "An error occurred while deleting the permission"
@@ -560,14 +564,14 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
     }
 
     // User-role operations
-    public override async Task<Backed.Grpc.GetUserRolesResponse> GetUserRoles(
-        Backed.Grpc.GetUserRolesRequest request, ServerCallContext context)
+    public override async Task<GetUserRolesResponse> GetUserRoles(
+        GetUserRolesRequest request, ServerCallContext context)
     {
         try
         {
             var roles = await _userService.GetUserRolesAsync(request.UserId);
 
-            return new Backed.Grpc.GetUserRolesResponse
+            return new GetUserRolesResponse
             {
                 Success = true,
                 Message = "User roles retrieved successfully",
@@ -577,7 +581,7 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving roles for user {UserId}", request.UserId);
-            return new Backed.Grpc.GetUserRolesResponse
+            return new GetUserRolesResponse
             {
                 Success = false,
                 Message = "An error occurred while retrieving user roles"
@@ -585,14 +589,14 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         }
     }
 
-    public override async Task<Backed.Grpc.GetUserPermissionsResponse> GetUserPermissions(
-        Backed.Grpc.GetUserPermissionsRequest request, ServerCallContext context)
+    public override async Task<GetUserPermissionsResponse> GetUserPermissions(
+        GetUserPermissionsRequest request, ServerCallContext context)
     {
         try
         {
             var permissions = await _userService.GetUserPermissionsAsync(request.UserId);
 
-            return new Backed.Grpc.GetUserPermissionsResponse
+            return new GetUserPermissionsResponse
             {
                 Success = true,
                 Message = "User permissions retrieved successfully",
@@ -602,7 +606,7 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving permissions for user {UserId}", request.UserId);
-            return new Backed.Grpc.GetUserPermissionsResponse
+            return new GetUserPermissionsResponse
             {
                 Success = false,
                 Message = "An error occurred while retrieving user permissions"
@@ -611,14 +615,14 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
     }
 
     // Menu operations
-    public override async Task<Backed.Grpc.GetAllMenusResponse> GetAllMenus(
-        Backed.Grpc.GetAllMenusRequest request, ServerCallContext context)
+    public override async Task<GetAllMenusResponse> GetAllMenus(
+        GetAllMenusRequest request, ServerCallContext context)
     {
         try
         {
             var menus = await _menuService.GetAllAsync();
 
-            return new Backed.Grpc.GetAllMenusResponse
+            return new GetAllMenusResponse
             {
                 Success = true,
                 Message = "Menus retrieved successfully",
@@ -628,7 +632,7 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving all menus");
-            return new Backed.Grpc.GetAllMenusResponse
+            return new GetAllMenusResponse
             {
                 Success = false,
                 Message = "An error occurred while retrieving menus"
@@ -636,21 +640,21 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         }
     }
 
-    public override async Task<Backed.Grpc.GetMenuResponse> GetMenu(
-        Backed.Grpc.GetMenuRequest request, ServerCallContext context)
+    public override async Task<GetMenuResponse> GetMenu(
+        GetMenuRequest request, ServerCallContext context)
     {
         try
         {
             var menu = await _menuService.GetByIdAsync(request.Id);
 
             if (menu == null)
-                return new Backed.Grpc.GetMenuResponse
+                return new GetMenuResponse
                 {
                     Success = false,
                     Message = "Menu not found"
                 };
 
-            return new Backed.Grpc.GetMenuResponse
+            return new GetMenuResponse
             {
                 Success = true,
                 Message = "Menu retrieved successfully",
@@ -660,7 +664,7 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving menu {MenuId}", request.Id);
-            return new Backed.Grpc.GetMenuResponse
+            return new GetMenuResponse
             {
                 Success = false,
                 Message = "An error occurred while retrieving the menu"
@@ -668,8 +672,8 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         }
     }
 
-    public override async Task<Backed.Grpc.CreateMenuResponse> CreateMenu(
-        Backed.Grpc.CreateMenuRequest request, ServerCallContext context)
+    public override async Task<CreateMenuResponse> CreateMenu(
+        CreateMenuRequest request, ServerCallContext context)
     {
         try
         {
@@ -686,7 +690,7 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
 
             var createdMenu = await _menuService.CreateAsync(menu);
 
-            return new Backed.Grpc.CreateMenuResponse
+            return new CreateMenuResponse
             {
                 Success = true,
                 Message = "Menu created successfully",
@@ -696,7 +700,7 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating menu {MenuName}", request.Name);
-            return new Backed.Grpc.CreateMenuResponse
+            return new CreateMenuResponse
             {
                 Success = false,
                 Message = "An error occurred while creating the menu"
@@ -704,15 +708,15 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         }
     }
 
-    public override async Task<Backed.Grpc.UpdateMenuResponse> UpdateMenu(
-        Backed.Grpc.UpdateMenuRequest request, ServerCallContext context)
+    public override async Task<UpdateMenuResponse> UpdateMenu(
+        UpdateMenuRequest request, ServerCallContext context)
     {
         try
         {
             var menu = MapToDomainMenu(request.Menu);
             await _menuService.UpdateAsync(menu);
 
-            return new Backed.Grpc.UpdateMenuResponse
+            return new UpdateMenuResponse
             {
                 Success = true,
                 Message = "Menu updated successfully",
@@ -722,7 +726,7 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating menu {MenuId}", request.Menu.Id);
-            return new Backed.Grpc.UpdateMenuResponse
+            return new UpdateMenuResponse
             {
                 Success = false,
                 Message = "An error occurred while updating the menu"
@@ -730,14 +734,14 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         }
     }
 
-    public override async Task<Backed.Grpc.DeleteMenuResponse> DeleteMenu(
-        Backed.Grpc.DeleteMenuRequest request, ServerCallContext context)
+    public override async Task<DeleteMenuResponse> DeleteMenu(
+        DeleteMenuRequest request, ServerCallContext context)
     {
         try
         {
             await _menuService.DeleteAsync(request.Id);
 
-            return new Backed.Grpc.DeleteMenuResponse
+            return new DeleteMenuResponse
             {
                 Success = true,
                 Message = "Menu deleted successfully"
@@ -746,7 +750,7 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting menu {MenuId}", request.Id);
-            return new Backed.Grpc.DeleteMenuResponse
+            return new DeleteMenuResponse
             {
                 Success = false,
                 Message = "An error occurred while deleting the menu"
@@ -754,14 +758,14 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         }
     }
 
-    public override async Task<Backed.Grpc.GetMenuTreeResponse> GetMenuTree(
-        Backed.Grpc.GetMenuTreeRequest request, ServerCallContext context)
+    public override async Task<GetMenuTreeResponse> GetMenuTree(
+        GetMenuTreeRequest request, ServerCallContext context)
     {
         try
         {
             var menus = await _menuService.GetMenuTreeAsync();
 
-            return new Backed.Grpc.GetMenuTreeResponse
+            return new GetMenuTreeResponse
             {
                 Success = true,
                 Message = "Menu tree retrieved successfully",
@@ -771,7 +775,7 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving menu tree");
-            return new Backed.Grpc.GetMenuTreeResponse
+            return new GetMenuTreeResponse
             {
                 Success = false,
                 Message = "An error occurred while retrieving menu tree"
@@ -780,9 +784,9 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
     }
 
     // Mapping methods
-    private Backed.Grpc.User MapToGrpcUser(User user)
+    private Grpc.User MapToGrpcUser(User user)
     {
-        return new Backed.Grpc.User
+        return new Grpc.User
         {
             Id = user.Id,
             Username = user.Username,
@@ -793,7 +797,7 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         };
     }
 
-    private User MapToDomainUser(Backed.Grpc.User user)
+    private User MapToDomainUser(Grpc.User user)
     {
         return new User
         {
@@ -807,9 +811,9 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         };
     }
 
-    private Backed.Grpc.Role MapToGrpcRole(Role role)
+    private Grpc.Role MapToGrpcRole(Role role)
     {
-        return new Backed.Grpc.Role
+        return new Grpc.Role
         {
             Id = role.Id,
             Name = role.Name,
@@ -819,7 +823,7 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         };
     }
 
-    private Role MapToDomainRole(Backed.Grpc.Role role)
+    private Role MapToDomainRole(Grpc.Role role)
     {
         return new Role
         {
@@ -831,9 +835,9 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         };
     }
 
-    private Backed.Grpc.Permission MapToGrpcPermission(Permission permission)
+    private Grpc.Permission MapToGrpcPermission(Permission permission)
     {
-        return new Backed.Grpc.Permission
+        return new Grpc.Permission
         {
             Id = permission.Id,
             Name = permission.Name,
@@ -843,7 +847,7 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         };
     }
 
-    private Permission MapToDomainPermission(Backed.Grpc.Permission permission)
+    private Permission MapToDomainPermission(Grpc.Permission permission)
     {
         return new Permission
         {
@@ -855,9 +859,9 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
         };
     }
 
-    private Backed.Grpc.Menu MapToGrpcMenu(Menu menu)
+    private Grpc.Menu MapToGrpcMenu(Menu menu)
     {
-        var grpcMenu = new Backed.Grpc.Menu
+        var grpcMenu = new Grpc.Menu
         {
             Id = menu.Id,
             Name = menu.Name,
@@ -889,7 +893,7 @@ public class RBACService : Backed.Grpc.RBACService.RBACServiceBase
             Code = menu.Code,
             Path = string.IsNullOrEmpty(menu.Path) ? null : menu.Path,
             Icon = string.IsNullOrEmpty(menu.Icon) ? null : menu.Icon,
-            ParentId = menu.ParentId == 0 ? null : menu.ParentId,
+            ParentId = menu.ParentId == 0 ? (int?)null : menu.ParentId, // 修复：当ParentId为0时才设为null
             SortOrder = menu.SortOrder,
             IsActive = menu.IsActive,
             CreatedAt = DateTimeOffset.FromUnixTimeSeconds(menu.CreatedAt).UtcDateTime,
