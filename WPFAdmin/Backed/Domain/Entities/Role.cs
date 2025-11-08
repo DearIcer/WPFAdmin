@@ -11,4 +11,5 @@ public class Role : EntityBase
     // Navigation properties
     public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
     public ICollection<RolePermission> RolePermissions { get; set; } = new List<RolePermission>();
+    public ICollection<RoleMenu> RoleMenus { get; set; } = new List<RoleMenu>();
 }

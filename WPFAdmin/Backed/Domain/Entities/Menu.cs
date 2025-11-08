@@ -31,4 +31,7 @@ public class Menu : EntityBase
     
     [JsonIgnore]
     public virtual ICollection<Menu> Children { get; set; } = new List<Menu>();
+    
+    [JsonIgnore]
+    public virtual ICollection<RoleMenu> RoleMenus { get; set; } = new List<RoleMenu>();
 }

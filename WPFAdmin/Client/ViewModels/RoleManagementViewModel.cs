@@ -19,8 +19,10 @@ public class RoleManagementViewModel : INotifyPropertyChanged
     private string _roleName = string.Empty;
     private string _roleDescription = string.Empty;
     private Role? _editingRole;
-    private ObservableCollection<PermissionItem> _permissions = new();
-    private bool _isPermissionsLoaded = false;
+    private ObservableCollection<MenuItem> _menuItems = new();
+    private Dictionary<string, int> _menuCodeToIdMap = new();
+    private bool _isAssignMenusDialogOpen;
+    private string _assignMenusDialogTitle = string.Empty;
 
     public RoleManagementViewModel()
     {
@@ -34,11 +36,13 @@ public class RoleManagementViewModel : INotifyPropertyChanged
         DeleteRoleCommand = new RelayCommand<Role?>(DeleteRole);
         SaveRoleCommand = new RelayCommand(SaveRole);
         CloseDialogCommand = new RelayCommand(CloseDialog);
-        SavePermissionsCommand = new RelayCommand(SavePermissions);
+        AssignMenusCommand = new RelayCommand<Role?>(AssignMenus);
+        SaveAssignMenusCommand = new RelayCommand(SaveAssignMenus);
+        CloseAssignMenusDialogCommand = new RelayCommand(CloseAssignMenusDialog);
 
         // 加载数据
         _ = LoadRolesAsync();
-        _ = LoadPermissionsAsync();
+        _ = LoadMenuItemsAsync();
     }
 
     public ObservableCollection<Role> Roles
@@ -58,10 +62,6 @@ public class RoleManagementViewModel : INotifyPropertyChanged
         {
             _selectedRole = value;
             OnPropertyChanged();
-            if (_selectedRole != null && _isPermissionsLoaded)
-            {
-                _ = LoadRolePermissionsAsync(_selectedRole.Id);
-            }
         }
     }
 
@@ -105,12 +105,32 @@ public class RoleManagementViewModel : INotifyPropertyChanged
         }
     }
 
-    public ObservableCollection<PermissionItem> Permissions
+    public ObservableCollection<MenuItem> MenuItems
     {
-        get => _permissions;
+        get => _menuItems;
         set
         {
-            _permissions = value;
+            _menuItems = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public bool IsAssignMenusDialogOpen
+    {
+        get => _isAssignMenusDialogOpen;
+        set
+        {
+            _isAssignMenusDialogOpen = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string AssignMenusDialogTitle
+    {
+        get => _assignMenusDialogTitle;
+        set
+        {
+            _assignMenusDialogTitle = value;
             OnPropertyChanged();
         }
     }
@@ -121,7 +141,9 @@ public class RoleManagementViewModel : INotifyPropertyChanged
     public ICommand DeleteRoleCommand { get; }
     public ICommand SaveRoleCommand { get; }
     public ICommand CloseDialogCommand { get; }
-    public ICommand SavePermissionsCommand { get; }
+    public ICommand AssignMenusCommand { get; }
+    public ICommand SaveAssignMenusCommand { get; }
+    public ICommand CloseAssignMenusDialogCommand { get; }
 
     private async Task LoadRolesAsync()
     {
@@ -145,72 +167,66 @@ public class RoleManagementViewModel : INotifyPropertyChanged
         }
     }
 
-    private async Task LoadPermissionsAsync()
+    private async Task LoadMenuItemsAsync()
     {
         try
         {
-            var request = new GetAllPermissionsRequest();
-            var response = await _rbacClient.GetAllPermissionsAsync(request);
+            // 加载菜单树
+            var menuRequest = new GetMenuTreeRequest();
+            var menuResponse = await _rbacClient.GetMenuTreeAsync(menuRequest);
 
-            if (response.Success)
+            // 加载所有菜单以构建Code到ID的映射
+            var allMenusRequest = new GetAllMenusRequest();
+            var allMenusResponse = await _rbacClient.GetAllMenusAsync(allMenusRequest);
+
+            if (menuResponse.Success && allMenusResponse.Success)
             {
-                var permissionItems = response.Permissions.Select(p => new PermissionItem
-                {
-                    Id = p.Id,
-                    Name = p.Name,
-                    Description = p.Description,
-                    IsAssigned = false
-                }).ToList();
-
-                Permissions = new ObservableCollection<PermissionItem>(permissionItems);
-                _isPermissionsLoaded = true;
+                var menuItems = MapGrpcMenusToClient(menuResponse.Menus);
+                MenuItems = new ObservableCollection<MenuItem>(menuItems);
+                
+                // 构建菜单Code到ID的映射
+                _menuCodeToIdMap = allMenusResponse.Menus.ToDictionary(m => m.Code, m => m.Id);
             }
             else
             {
-                MessageBox.Show($"加载权限失败: {response.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                var errorMessage = menuResponse.Success ? allMenusResponse.Message : menuResponse.Message;
+                MessageBox.Show($"加载菜单失败: {errorMessage}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"加载权限时发生错误: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show($"加载菜单时发生错误: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
-    private async Task LoadRolePermissionsAsync(int roleId)
+    private List<MenuItem> MapGrpcMenusToClient(Google.Protobuf.Collections.RepeatedField<Menu> grpcMenus, MenuItem? parent = null)
     {
-        try
+        var menuItems = new List<MenuItem>();
+
+        foreach (var grpcMenu in grpcMenus)
         {
-            // 重置所有权限为未分配状态
-            foreach (var permission in Permissions)
+            var menuItem = new MenuItem
             {
-                permission.IsAssigned = false;
-            }
+                Id = grpcMenu.Code,
+                Code = grpcMenu.Code,
+                Name = grpcMenu.Name,
+                Icon = grpcMenu.Icon,
+                Parent = parent
+            };
 
-            // 获取角色的权限
-            var request = new GetRolePermissionsRequest { RoleId = roleId };
-            var response = await _rbacClient.GetRolePermissionsAsync(request);
-
-            if (response.Success)
+            if (grpcMenu.Children.Count > 0)
             {
-                // 标记已分配的权限
-                var rolePermissionIds = response.Permissions.Select(p => p.Id).ToHashSet();
-                foreach (var permission in Permissions)
+                var children = MapGrpcMenusToClient(grpcMenu.Children, menuItem);
+                foreach (var child in children)
                 {
-                    permission.IsAssigned = rolePermissionIds.Contains(permission.Id);
+                    menuItem.Children.Add(child);
                 }
-                
-                // 触发UI更新
-                OnPropertyChanged(nameof(Permissions));
             }
-            else
-            {
-                MessageBox.Show($"加载角色权限失败: {response.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+
+            menuItems.Add(menuItem);
         }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"加载角色权限时发生错误: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
+
+        return menuItems;
     }
 
     private void AddRole()
@@ -335,7 +351,23 @@ public class RoleManagementViewModel : INotifyPropertyChanged
         IsDialogOpen = false;
     }
 
-    private async void SavePermissions()
+    private void AssignMenus(Role? role)
+    {
+        if (role == null) return;
+        
+        SelectedRole = role;
+        AssignMenusDialogTitle = "分配菜单";
+        
+        // 重置所有菜单项为未分配状态
+        ResetMenuItemsAssignment(MenuItems);
+        
+        // 加载该角色已分配的菜单
+        _ = LoadRoleMenusAsync(role.Id);
+        
+        IsAssignMenusDialogOpen = true;
+    }
+
+    private async void SaveAssignMenus()
     {
         if (SelectedRole == null)
         {
@@ -345,65 +377,140 @@ public class RoleManagementViewModel : INotifyPropertyChanged
 
         try
         {
-            // 先获取角色当前的权限
-            var getRequest = new GetRolePermissionsRequest { RoleId = SelectedRole.Id };
-            var getResponse = await _rbacClient.GetRolePermissionsAsync(getRequest);
+            // 先获取角色当前的菜单
+            var getRequest = new GetRoleMenusRequest { RoleId = SelectedRole.Id };
+            var getResponse = await _rbacClient.GetRoleMenusAsync(getRequest);
 
             if (!getResponse.Success)
             {
-                MessageBox.Show($"获取角色当前权限失败: {getResponse.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"获取角色当前菜单失败: {getResponse.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
-            var currentPermissionIds = getResponse.Permissions.Select(p => p.Id).ToHashSet();
+            var currentMenuCodes = getResponse.Menus.Select(m => m.Code).ToHashSet();
 
-            // 处理需要添加的权限
-            var permissionsToAssign = Permissions.Where(p => p.IsAssigned && !currentPermissionIds.Contains(p.Id)).ToList();
-            foreach (var permission in permissionsToAssign)
+            // 处理需要添加的菜单
+            var menusToAssign = new List<MenuItem>();
+            CollectAssignedMenuItems(MenuItems, menusToAssign);
+            
+            // 分配新选择的菜单
+            foreach (var menuItem in menusToAssign.Where(m => !currentMenuCodes.Contains(m.Code)))
             {
-                var request = new AssignPermissionToRoleRequest
+                if (_menuCodeToIdMap.TryGetValue(menuItem.Code, out int menuId))
                 {
-                    RoleId = SelectedRole.Id,
-                    PermissionId = permission.Id
-                };
+                    var request = new AssignMenuToRoleRequest
+                    {
+                        RoleId = SelectedRole.Id,
+                        MenuId = menuId
+                    };
 
-                var response = await _rbacClient.AssignPermissionToRoleAsync(request);
-                if (!response.Success)
+                    var response = await _rbacClient.AssignMenuToRoleAsync(request);
+                    if (!response.Success)
+                    {
+                        MessageBox.Show($"分配菜单 '{menuItem.Name}' 失败: {response.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+                else
                 {
-                    MessageBox.Show($"分配权限 '{permission.Name}' 失败: {response.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"无法找到菜单 '{menuItem.Name}' 的ID", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
 
-            // 处理需要移除的权限
-            var permissionsToRemove = Permissions.Where(p => !p.IsAssigned && currentPermissionIds.Contains(p.Id)).ToList();
-            foreach (var permission in permissionsToRemove)
+            // 处理需要移除的菜单
+            var menuCodesToAssign = menusToAssign.Select(m => m.Code).ToHashSet();
+            var menusToRemove = getResponse.Menus.Where(m => !menuCodesToAssign.Contains(m.Code)).ToList();
+            foreach (var menu in menusToRemove)
             {
-                var request = new RemovePermissionFromRoleRequest
+                if (_menuCodeToIdMap.TryGetValue(menu.Code, out int menuId))
                 {
-                    RoleId = SelectedRole.Id,
-                    PermissionId = permission.Id
-                };
+                    var request = new RemoveMenuFromRoleRequest
+                    {
+                        RoleId = SelectedRole.Id,
+                        MenuId = menuId
+                    };
 
-                var response = await _rbacClient.RemovePermissionFromRoleAsync(request);
-                if (!response.Success)
+                    var response = await _rbacClient.RemoveMenuFromRoleAsync(request);
+                    if (!response.Success)
+                    {
+                        MessageBox.Show($"移除菜单 '{menu.Name}' 失败: {response.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+                else
                 {
-                    MessageBox.Show($"移除权限 '{permission.Name}' 失败: {response.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"无法找到菜单 '{menu.Name}' 的ID", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
 
-            MessageBox.Show("权限配置保存成功。", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show("菜单分配保存成功。", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+            CloseAssignMenusDialog();
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"保存权限时发生错误: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show($"保存菜单分配时发生错误: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
-    private async Task LoadRolePermissionsWithDelayAsync(int roleId)
+    private void CloseAssignMenusDialog()
     {
-        // 等待一小段时间确保权限列表加载完成
-        await Task.Delay(100);
-        await LoadRolePermissionsAsync(roleId);
+        IsAssignMenusDialogOpen = false;
+    }
+
+    private void CollectAssignedMenuItems(ObservableCollection<MenuItem> menuItems, List<MenuItem> assignedItems)
+    {
+        foreach (var menuItem in menuItems)
+        {
+            if (menuItem.IsAssigned)
+            {
+                assignedItems.Add(menuItem);
+            }
+            CollectAssignedMenuItems(menuItem.Children, assignedItems);
+        }
+    }
+
+    private async Task LoadRoleMenusAsync(int roleId)
+    {
+        try
+        {
+            // 重置所有菜单项为未分配状态
+            ResetMenuItemsAssignment(MenuItems);
+
+            // 获取角色的菜单
+            var request = new GetRoleMenusRequest { RoleId = roleId };
+            var response = await _rbacClient.GetRoleMenusAsync(request);
+
+            if (response.Success)
+            {
+                // 标记已分配的菜单
+                var roleMenuCodes = response.Menus.Select(m => m.Code).ToHashSet();
+                MarkMenuItemsAsAssigned(MenuItems, roleMenuCodes);
+            }
+            else
+            {
+                MessageBox.Show($"加载角色菜单失败: {response.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"加载角色菜单时发生错误: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void ResetMenuItemsAssignment(ObservableCollection<MenuItem> menuItems)
+    {
+        foreach (var menuItem in menuItems)
+        {
+            menuItem.IsAssigned = false;
+            ResetMenuItemsAssignment(menuItem.Children);
+        }
+    }
+
+    private void MarkMenuItemsAsAssigned(ObservableCollection<MenuItem> menuItems, HashSet<string> roleMenuCodes)
+    {
+        foreach (var menuItem in menuItems)
+        {
+            menuItem.IsAssigned = roleMenuCodes.Contains(menuItem.Code);
+            MarkMenuItemsAsAssigned(menuItem.Children, roleMenuCodes);
+        }
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

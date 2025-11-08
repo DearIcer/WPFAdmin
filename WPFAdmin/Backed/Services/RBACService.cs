@@ -137,7 +137,7 @@ public class RBACService : Grpc.RBACService.RBACServiceBase
             {
                 Username = request.Username,
                 Email = request.Email,
-                PasswordHash = "" // 临时设置空字符串，实际会在UserService中处理
+                IsActive = true // 默认激活新用户
             };
 
             var createdUser = await _userService.CreateAsync(user, request.Password);
@@ -614,6 +614,158 @@ public class RBACService : Grpc.RBACService.RBACServiceBase
         }
     }
 
+    public override async Task<AssignRoleToUserResponse> AssignRoleToUser(
+        AssignRoleToUserRequest request, ServerCallContext context)
+    {
+        try
+        {
+            await _userService.AssignRoleAsync(request.UserId, request.RoleId);
+
+            return new AssignRoleToUserResponse
+            {
+                Success = true,
+                Message = "Role assigned to user successfully"
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error assigning role {RoleId} to user {UserId}",
+                request.RoleId, request.UserId);
+            return new AssignRoleToUserResponse
+            {
+                Success = false,
+                Message = "An error occurred while assigning role to user"
+            };
+        }
+    }
+
+    public override async Task<RemoveRoleFromUserResponse> RemoveRoleFromUser(
+        RemoveRoleFromUserRequest request, ServerCallContext context)
+    {
+        try
+        {
+            await _userService.RemoveRoleAsync(request.UserId, request.RoleId);
+
+            return new RemoveRoleFromUserResponse
+            {
+                Success = true,
+                Message = "Role removed from user successfully"
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error removing role {RoleId} from user {UserId}",
+                request.RoleId, request.UserId);
+            return new RemoveRoleFromUserResponse
+            {
+                Success = false,
+                Message = "An error occurred while removing role from user"
+            };
+        }
+    }
+
+    // Role-menu operations
+    public override async Task<GetRoleMenusResponse> GetRoleMenus(
+        GetRoleMenusRequest request, ServerCallContext context)
+    {
+        try
+        {
+            var menus = await _roleService.GetRoleMenusAsync(request.RoleId);
+
+            return new GetRoleMenusResponse
+            {
+                Success = true,
+                Message = "Role menus retrieved successfully",
+                Menus = { menus.Select(MapToGrpcMenu) }
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving menus for role {RoleId}", request.RoleId);
+            return new GetRoleMenusResponse
+            {
+                Success = false,
+                Message = "An error occurred while retrieving role menus"
+            };
+        }
+    }
+
+    public override async Task<AssignMenuToRoleResponse> AssignMenuToRole(
+        AssignMenuToRoleRequest request, ServerCallContext context)
+    {
+        try
+        {
+            await _roleService.AssignMenuAsync(request.RoleId, request.MenuId);
+
+            return new AssignMenuToRoleResponse
+            {
+                Success = true,
+                Message = "Menu assigned to role successfully"
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error assigning menu {MenuId} to role {RoleId}",
+                request.MenuId, request.RoleId);
+            return new AssignMenuToRoleResponse
+            {
+                Success = false,
+                Message = "An error occurred while assigning menu to role"
+            };
+        }
+    }
+
+    public override async Task<RemoveMenuFromRoleResponse> RemoveMenuFromRole(
+        RemoveMenuFromRoleRequest request, ServerCallContext context)
+    {
+        try
+        {
+            await _roleService.RemoveMenuAsync(request.RoleId, request.MenuId);
+
+            return new RemoveMenuFromRoleResponse
+            {
+                Success = true,
+                Message = "Menu removed from role successfully"
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error removing menu {MenuId} from role {RoleId}",
+                request.MenuId, request.RoleId);
+            return new RemoveMenuFromRoleResponse
+            {
+                Success = false,
+                Message = "An error occurred while removing menu from role"
+            };
+        }
+    }
+
+    // Menu mapping operations
+    public override async Task<GetMenuCodeToIdMapResponse> GetMenuCodeToIdMap(
+        GetMenuCodeToIdMapRequest request, ServerCallContext context)
+    {
+        try
+        {
+            var menuMap = await _menuService.GetMenuCodeToIdMapAsync();
+
+            return new GetMenuCodeToIdMapResponse
+            {
+                Success = true,
+                Message = "Menu code to ID map retrieved successfully",
+                MenuMap = { menuMap }
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving menu code to ID map");
+            return new GetMenuCodeToIdMapResponse
+            {
+                Success = false,
+                Message = "An error occurred while retrieving menu code to ID map"
+            };
+        }
+    }
+
     // Menu operations
     public override async Task<GetAllMenusResponse> GetAllMenus(
         GetAllMenusRequest request, ServerCallContext context)
@@ -636,6 +788,31 @@ public class RBACService : Grpc.RBACService.RBACServiceBase
             {
                 Success = false,
                 Message = "An error occurred while retrieving menus"
+            };
+        }
+    }
+
+    public override async Task<GetUserMenuTreeResponse> GetUserMenuTree(
+        GetUserMenuTreeRequest request, ServerCallContext context)
+    {
+        try
+        {
+            var menus = await _userService.GetUserMenusAsync(request.UserId);
+
+            return new GetUserMenuTreeResponse
+            {
+                Success = true,
+                Message = "User menu tree retrieved successfully",
+                Menus = { menus.Select(MapToGrpcMenu) }
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving menu tree for user {UserId}", request.UserId);
+            return new GetUserMenuTreeResponse
+            {
+                Success = false,
+                Message = "An error occurred while retrieving user menu tree"
             };
         }
     }
@@ -799,6 +976,9 @@ public class RBACService : Grpc.RBACService.RBACServiceBase
 
     private User MapToDomainUser(Grpc.User user)
     {
+        // 首先从数据库获取现有用户以保留密码
+        var existingUser = _userService.GetByIdAsync(user.Id).Result;
+        
         return new User
         {
             Id = user.Id,
@@ -807,7 +987,7 @@ public class RBACService : Grpc.RBACService.RBACServiceBase
             IsActive = user.IsActive,
             CreatedAt = DateTimeOffset.FromUnixTimeSeconds(user.CreatedAt).UtcDateTime,
             UpdatedAt = DateTimeOffset.FromUnixTimeSeconds(user.UpdatedAt).UtcDateTime,
-            PasswordHash = "" // PasswordHash is not transferred for security reasons
+            PasswordHash = existingUser?.PasswordHash ?? "" // 保留现有密码哈希
         };
     }
 

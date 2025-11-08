@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using Backed.Grpc;
 using Client.Models;
@@ -18,6 +19,8 @@ public class UserManagementViewModel : INotifyPropertyChanged
     private string _newPassword = string.Empty;
     private bool _isEditing;
     private User? _editingUser;
+    private ObservableCollection<RoleItem> _availableRoles = new();
+    private bool _isRolesLoaded = false;
     
     private readonly RBACService.RBACServiceClient _rbacClient;
 
@@ -38,6 +41,7 @@ public class UserManagementViewModel : INotifyPropertyChanged
         
         // 加载用户数据
         _ = LoadUsersAsync();
+        _ = LoadRolesAsync();
     }
 
     public ObservableCollection<User> Users
@@ -60,6 +64,11 @@ public class UserManagementViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(IsUserSelected));
             (EditUserCommand as RelayCommand)?.RaiseCanExecuteChanged();
             (DeleteUserCommand as RelayCommand)?.RaiseCanExecuteChanged();
+            
+            if (_selectedUser != null && _isRolesLoaded)
+            {
+                _ = LoadUserRolesAsync(_selectedUser.Id);
+            }
         }
     }
 
@@ -115,6 +124,16 @@ public class UserManagementViewModel : INotifyPropertyChanged
         }
     }
 
+    public ObservableCollection<RoleItem> AvailableRoles
+    {
+        get => _availableRoles;
+        set
+        {
+            _availableRoles = value;
+            OnPropertyChanged();
+        }
+    }
+
     public ICommand LoadUsersCommand { get; }
     public ICommand AddUserCommand { get; }
     public ICommand EditUserCommand { get; }
@@ -144,6 +163,70 @@ public class UserManagementViewModel : INotifyPropertyChanged
         }
     }
 
+    private async Task LoadRolesAsync()
+    {
+        try
+        {
+            var request = new GetAllRolesRequest();
+            var response = await _rbacClient.GetAllRolesAsync(request);
+
+            if (response.Success)
+            {
+                var roleItems = response.Roles.Select(r => new RoleItem
+                {
+                    Id = r.Id,
+                    Name = r.Name,
+                    IsAssigned = false
+                }).ToList();
+
+                AvailableRoles = new ObservableCollection<RoleItem>(roleItems);
+                _isRolesLoaded = true;
+            }
+            else
+            {
+                MessageBox.Show($"加载角色失败: {response.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"加载角色时发生错误: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private async Task LoadUserRolesAsync(int userId)
+    {
+        try
+        {
+            // 重置所有角色为未分配状态
+            foreach (var role in AvailableRoles)
+            {
+                role.IsAssigned = false;
+            }
+
+            // 获取用户的角色
+            var request = new GetUserRolesRequest { UserId = userId };
+            var response = await _rbacClient.GetUserRolesAsync(request);
+
+            if (response.Success)
+            {
+                // 标记已分配的角色
+                var userRoleIds = response.Roles.Select(r => r.Id).ToHashSet();
+                foreach (var role in AvailableRoles)
+                {
+                    role.IsAssigned = userRoleIds.Contains(role.Id);
+                }
+            }
+            else
+            {
+                MessageBox.Show($"加载用户角色失败: {response.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"加载用户角色时发生错误: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
     private async Task AddUserAsync()
     {
         if (string.IsNullOrWhiteSpace(NewUsername) || string.IsNullOrWhiteSpace(NewEmail) || string.IsNullOrWhiteSpace(NewPassword))
@@ -166,6 +249,13 @@ public class UserManagementViewModel : INotifyPropertyChanged
             if (response.Success)
             {
                 Users.Add(response.User);
+                
+                // 为新创建的用户分配选中的角色
+                if (response.User.Id > 0)
+                {
+                    await AssignRolesToUserAsync(response.User.Id);
+                }
+                
                 MessageBox.Show("用户创建成功。", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
                 
                 // 清空输入框
@@ -183,8 +273,35 @@ public class UserManagementViewModel : INotifyPropertyChanged
             MessageBox.Show($"创建用户时发生错误: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
+    
+    private async Task AssignRolesToUserAsync(int userId)
+    {
+        try
+        {
+            // 处理需要分配的角色
+            var rolesToAssign = AvailableRoles.Where(r => r.IsAssigned).ToList();
+            foreach (var role in rolesToAssign)
+            {
+                var request = new AssignRoleToUserRequest
+                {
+                    UserId = userId,
+                    RoleId = role.Id
+                };
 
-    private void EditUser()
+                var response = await _rbacClient.AssignRoleToUserAsync(request);
+                if (!response.Success)
+                {
+                    MessageBox.Show($"分配角色 '{role.Name}' 失败: {response.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"分配用户角色时发生错误: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private async void EditUser()
     {
         if (SelectedUser == null) return;
         
@@ -196,6 +313,12 @@ public class UserManagementViewModel : INotifyPropertyChanged
             Email = SelectedUser.Email,
             IsActive = SelectedUser.IsActive
         };
+        
+        // 加载用户的角色
+        if (_isRolesLoaded)
+        {
+            await LoadUserRolesAsync(SelectedUser.Id);
+        }
     }
 
     private bool CanEditOrDeleteUser()
@@ -254,10 +377,13 @@ public class UserManagementViewModel : INotifyPropertyChanged
                 Users[index] = response.User;
                 SelectedUser = response.User;
                 
+                // 保存用户角色分配
+                await SaveUserRolesAsync(EditingUser.Id);
+                
                 IsEditing = false;
                 EditingUser = null;
                 
-                MessageBox.Show("用户信息更新成功。", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("用户信息和角色更新成功。", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else
             {
@@ -270,10 +396,74 @@ public class UserManagementViewModel : INotifyPropertyChanged
         }
     }
 
+    private async Task SaveUserRolesAsync(int userId)
+    {
+        try
+        {
+            // 先获取用户当前的角色
+            var getRequest = new GetUserRolesRequest { UserId = userId };
+            var getResponse = await _rbacClient.GetUserRolesAsync(getRequest);
+
+            if (!getResponse.Success)
+            {
+                MessageBox.Show($"获取用户当前角色失败: {getResponse.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            var currentUserRoleIds = getResponse.Roles.Select(r => r.Id).ToHashSet();
+
+            // 处理需要添加的角色
+            var rolesToAssign = AvailableRoles.Where(r => r.IsAssigned && !currentUserRoleIds.Contains(r.Id)).ToList();
+            foreach (var role in rolesToAssign)
+            {
+                var request = new AssignRoleToUserRequest
+                {
+                    UserId = userId,
+                    RoleId = role.Id
+                };
+
+                var response = await _rbacClient.AssignRoleToUserAsync(request);
+                if (!response.Success)
+                {
+                    MessageBox.Show($"分配角色 '{role.Name}' 失败: {response.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+
+            // 处理需要移除的角色
+            var rolesToRemove = AvailableRoles.Where(r => !r.IsAssigned && currentUserRoleIds.Contains(r.Id)).ToList();
+            foreach (var role in rolesToRemove)
+            {
+                var request = new RemoveRoleFromUserRequest
+                {
+                    UserId = userId,
+                    RoleId = role.Id
+                };
+
+                var response = await _rbacClient.RemoveRoleFromUserAsync(request);
+                if (!response.Success)
+                {
+                    MessageBox.Show($"移除角色 '{role.Name}' 失败: {response.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"保存用户角色时发生错误: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
     private void CancelEdit()
     {
         IsEditing = false;
         EditingUser = null;
+    }
+
+    public void NewPasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
+    {
+        if (sender is PasswordBox passwordBox)
+        {
+            NewPassword = passwordBox.Password;
+        }
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

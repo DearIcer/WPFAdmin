@@ -1,46 +1,52 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
+using System.Windows;
+using System.Windows.Input;
+using Backed.Grpc;
 using Client.Models;
-using Client.Services;
 using Client.Views;
+using Grpc.Net.Client;
 
 namespace Client.ViewModels;
 
 public class MainViewModel : INotifyPropertyChanged
 {
-    private readonly Dictionary<string, Func<object>> _viewFactory;
-    private readonly PermissionService _permissionService;
-    private object? _currentView;
+    private readonly RBACService.RBACServiceClient _rbacClient;
+    private User? _currentUser;
     private ObservableCollection<MenuItem> _menuItems;
     private MenuItem? _selectedItem;
-    private int _currentUserId;
-
-    public MainViewModel(int userId, PermissionService permissionService) // 从登录信息中获取用户ID和权限服务
+    private object? _currentView;
+    
+    public MainViewModel()
     {
-        // 初始化权限服务
-        _permissionService = permissionService;
-        _currentUserId = userId;
+        // 初始化gRPC客户端
+        var channel = GrpcChannel.ForAddress("http://localhost:5101");
+        _rbacClient = new RBACService.RBACServiceClient(channel);
         
-        // 初始化视图工厂
-        _viewFactory = new Dictionary<string, Func<object>>(StringComparer.OrdinalIgnoreCase)
-        {
-            { "dashboard", () => new DashboardView() },
-            { "products", () => new ProductsView() },
-            { "menu_management", () => new MenuManagementView() },
-            { "user_management", () => new UserManagementView() },
-            { "role_management", () => new RoleManagementView() }
-            // 可以在这里添加更多视图
-            // { "orders", () => new OrdersView() }
-        };
-
-        MenuItems = new ObservableCollection<MenuItem>();
-        LoadMenuData();
+        // 初始化菜单项
+        _menuItems = new ObservableCollection<MenuItem>();
+        
+        // 初始化命令
+        LogoutCommand = new RelayCommand(Logout);
+        NavigateCommand = new RelayCommand<MenuItem>(Navigate);
+        
         // 默认显示仪表盘
         CurrentView = new DashboardView();
+    }
+
+    public User? CurrentUser
+    {
+        get => _currentUser;
+        set
+        {
+            _currentUser = value;
+            OnPropertyChanged();
+            if (_currentUser != null)
+            {
+                _ = LoadUserMenusAsync(_currentUser.Id);
+            }
+        }
     }
 
     public ObservableCollection<MenuItem> MenuItems
@@ -60,7 +66,7 @@ public class MainViewModel : INotifyPropertyChanged
         {
             _selectedItem = value;
             OnPropertyChanged();
-            if (_selectedItem != null) NavigateToView(_selectedItem.Id);
+            Navigate(_selectedItem);
         }
     }
 
@@ -74,42 +80,85 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
-    public event PropertyChangedEventHandler? PropertyChanged;
+    public ICommand LogoutCommand { get; }
+    public ICommand NavigateCommand { get; }
 
-    private async void LoadMenuData()
+    private async Task LoadUserMenusAsync(int userId)
     {
         try
         {
-            // 从后端加载用户权限
-            await _permissionService.LoadUserPermissionsAsync(_currentUserId);
-            
-            // 使用权限服务获取基于权限的菜单数据
-            var menuItems = _permissionService.GetMenuItemsByPermissions();
-            MenuItems = new ObservableCollection<MenuItem>(menuItems);
+            var request = new GetUserMenuTreeRequest { UserId = userId };
+            var response = await _rbacClient.GetUserMenuTreeAsync(request);
+
+            if (response.Success)
+            {
+                var menuItems = MapGrpcMenusToClient(response.Menus);
+                MenuItems = new ObservableCollection<MenuItem>(menuItems);
+            }
+            else
+            {
+                MessageBox.Show($"加载用户菜单失败: {response.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
         catch (Exception ex)
         {
-            // 异常处理：输出日志并加载默认数据
-            Debug.WriteLine($"加载菜单数据时出错: {ex.Message}");
-            CreateDefaultMenuData();
+            MessageBox.Show($"加载用户菜单时发生错误: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
-    private void CreateDefaultMenuData()
+    private List<MenuItem> MapGrpcMenusToClient(Google.Protobuf.Collections.RepeatedField<Menu> grpcMenus)
     {
-        // 使用权限服务获取菜单数据
-        var menuItems = _permissionService.GetMenuItemsByPermissions();
-        MenuItems = new ObservableCollection<MenuItem>(menuItems);
+        var menuItems = new List<MenuItem>();
+
+        foreach (var grpcMenu in grpcMenus)
+        {
+            var menuItem = new MenuItem
+            {
+                Id = grpcMenu.Code,
+                Code = grpcMenu.Code,
+                Name = grpcMenu.Name,
+                Icon = grpcMenu.Icon
+            };
+
+            if (grpcMenu.Children.Count > 0)
+            {
+                var children = MapGrpcMenusToClient(grpcMenu.Children);
+                foreach (var child in children)
+                {
+                    menuItem.Children.Add(child);
+                }
+            }
+
+            menuItems.Add(menuItem);
+        }
+
+        return menuItems;
     }
 
-    private void NavigateToView(string viewId)
+    private void Logout()
     {
-        if (_viewFactory.TryGetValue(viewId, out var viewFactory))
-            CurrentView = viewFactory();
-        else
-            // 默认显示仪表盘
-            CurrentView = new DashboardView();
+        // 触发登出事件
+        LoggedOut?.Invoke(this, EventArgs.Empty);
     }
+
+    private void Navigate(MenuItem? menuItem)
+    {
+        if (menuItem == null) return;
+
+        // 根据菜单项导航到相应的视图
+        CurrentView = menuItem.Code switch
+        {
+            "dashboard" => new DashboardView(),
+            "products" => new ProductsView(),
+            "user_management" => new UserManagementView(),
+            "role_management" => new RoleManagementView(),
+            "menu_management" => new MenuManagementView(),
+            _ => CurrentView
+        };
+    }
+
+    public event EventHandler? LoggedOut;
+    public event PropertyChangedEventHandler? PropertyChanged;
 
     protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {

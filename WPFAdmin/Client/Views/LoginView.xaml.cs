@@ -46,11 +46,10 @@ public partial class LoginView : UserControl
             if (response.Success)
             {
                 // 登录成功，加载用户权限并显示主窗口
-                var permissionService = new PermissionService();
-                await permissionService.LoadUserPermissionsAsync(response.User.Id);
-
                 var mainWindow = new MainWindow();
-                mainWindow.DataContext = new MainViewModel(response.User.Id, permissionService);
+                var mainViewModel = new MainViewModel();
+                mainViewModel.CurrentUser = response.User;
+                mainWindow.DataContext = mainViewModel;
                 mainWindow.Show();
 
                 // 关闭当前登录窗口

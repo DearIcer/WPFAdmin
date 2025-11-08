@@ -24,7 +24,7 @@
                     BorderBrush="{DynamicResource PrimaryHueMidBrush}" />
         </StackPanel>
 
-        <!-- 角色列表和权限配置 -->
+        <!-- 角色列表和菜单配置 -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1*" />
@@ -52,6 +52,11 @@
                                             Command="{Binding DataContext.EditRoleCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                             CommandParameter="{Binding}"
                                             Foreground="{DynamicResource PrimaryHueMidBrush}" />
+                                    <Button Content="分配菜单" 
+                                            Style="{StaticResource MaterialDesignFlatButton}"
+                                            Command="{Binding DataContext.AssignMenusCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding}"
+                                            Foreground="{DynamicResource PrimaryHueMidBrush}" />
                                     <Button Content="删除" 
                                             Style="{StaticResource MaterialDesignFlatButton}"
                                             Command="{Binding DataContext.DeleteRoleCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
@@ -64,36 +69,23 @@
                 </DataGrid.Columns>
             </DataGrid>
 
-            <!-- 权限配置 -->
+            <!-- 角色详情 -->
             <Grid Grid.Column="1" DataContext="{Binding SelectedRole}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <TextBlock Grid.Row="0" Text="权限配置" 
+                <TextBlock Grid.Row="0" Text="角色详情" 
                            Style="{StaticResource MaterialDesignHeadline6TextBlock}"
                            Margin="0,0,0,10" />
 
-                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                    <ItemsControl ItemsSource="{Binding DataContext.Permissions, RelativeSource={RelativeSource AncestorType=UserControl}}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <CheckBox Content="{Binding Name}"
-                                          IsChecked="{Binding IsAssigned}"
-                                          Margin="0,5" />
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollViewer>
-
-                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
-                    <Button Content="保存权限"
-                            Style="{StaticResource MaterialDesignRaisedButton}"
-                            Command="{Binding DataContext.SavePermissionsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                            Background="{DynamicResource PrimaryHueMidBrush}"
-                            BorderBrush="{DynamicResource PrimaryHueMidBrush}" />
+                <StackPanel Grid.Row="1">
+                    <TextBlock Text="角色名称:" Style="{StaticResource MaterialDesignBody1TextBlock}" />
+                    <TextBlock Text="{Binding Name}" Margin="0,0,0,10" />
+                    
+                    <TextBlock Text="角色描述:" Style="{StaticResource MaterialDesignBody1TextBlock}" />
+                    <TextBlock Text="{Binding Description}" Margin="0,0,0,10" />
                 </StackPanel>
             </Grid>
         </Grid>
@@ -129,6 +121,71 @@
                         <Button Content="保存"
                                 Style="{StaticResource MaterialDesignRaisedButton}"
                                 Command="{Binding SaveRoleCommand}"
+                                Background="{DynamicResource PrimaryHueMidBrush}"
+                                BorderBrush="{DynamicResource PrimaryHueMidBrush}" />
+                    </StackPanel>
+                </StackPanel>
+            </materialDesign:DialogHost.DialogContent>
+        </materialDesign:DialogHost>
+        
+        <!-- 分配菜单对话框 -->
+        <materialDesign:DialogHost Grid.Row="0" Grid.RowSpan="2" 
+                                   IsOpen="{Binding IsAssignMenusDialogOpen}"
+                                   DialogTheme="Inherit">
+            <materialDesign:DialogHost.DialogContent>
+                <StackPanel Margin="20" MinWidth="400" MaxWidth="600">
+                    <TextBlock Text="{Binding AssignMenusDialogTitle}" 
+                               Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                               Margin="0,0,0,20" />
+                    
+                    <TextBlock Text="{Binding SelectedRole.Name, StringFormat='为角色 {0} 分配菜单'}"
+                               Style="{StaticResource MaterialDesignBody1TextBlock}"
+                               Margin="0,0,0,10" />
+                    
+                    <ScrollViewer MaxHeight="400" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding MenuItems}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel>
+                                        <CheckBox Content="{Binding Name}"
+                                                  IsChecked="{Binding IsAssigned}"
+                                                  Margin="0,5" />
+                                        <ItemsControl ItemsSource="{Binding Children}" 
+                                                      Margin="20,0,0,0">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel>
+                                                        <CheckBox Content="{Binding Name}"
+                                                                  IsChecked="{Binding IsAssigned}"
+                                                                  Margin="0,5" />
+                                                        <ItemsControl ItemsSource="{Binding Children}" 
+                                                                      Margin="20,0,0,0">
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <CheckBox Content="{Binding Name}"
+                                                                              IsChecked="{Binding IsAssigned}"
+                                                                              Margin="0,5" />
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                    
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+                        <Button Content="取消"
+                                Style="{StaticResource MaterialDesignFlatButton}"
+                                Command="{Binding CloseAssignMenusDialogCommand}"
+                                Margin="0,0,10,0" />
+                        <Button Content="保存"
+                                Style="{StaticResource MaterialDesignRaisedButton}"
+                                Command="{Binding SaveAssignMenusCommand}"
                                 Background="{DynamicResource PrimaryHueMidBrush}"
                                 BorderBrush="{DynamicResource PrimaryHueMidBrush}" />
                     </StackPanel>

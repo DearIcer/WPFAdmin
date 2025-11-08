@@ -11,4 +11,5 @@ public interface IMenuService
     Task DeleteAsync(int id);
     Task<IEnumerable<Menu>> GetActiveMenusAsync();
     Task<IEnumerable<Menu>> GetMenuTreeAsync();
+    Task<Dictionary<string, int>> GetMenuCodeToIdMapAsync();
 }

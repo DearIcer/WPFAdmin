@@ -34,6 +34,8 @@ service RBACService {
   // User-role operations
   rpc GetUserRoles (GetUserRolesRequest) returns (GetUserRolesResponse);
   rpc GetUserPermissions (GetUserPermissionsRequest) returns (GetUserPermissionsResponse);
+  rpc AssignRoleToUser (AssignRoleToUserRequest) returns (AssignRoleToUserResponse);
+  rpc RemoveRoleFromUser (RemoveRoleFromUserRequest) returns (RemoveRoleFromUserResponse);
   
   // Menu operations
   rpc GetAllMenus (GetAllMenusRequest) returns (GetAllMenusResponse);
@@ -42,6 +44,15 @@ service RBACService {
   rpc UpdateMenu (UpdateMenuRequest) returns (UpdateMenuResponse);
   rpc DeleteMenu (DeleteMenuRequest) returns (DeleteMenuResponse);
   rpc GetMenuTree (GetMenuTreeRequest) returns (GetMenuTreeResponse);
+  rpc GetUserMenuTree (GetUserMenuTreeRequest) returns (GetUserMenuTreeResponse);
+  
+  // Role-menu operations
+  rpc GetRoleMenus (GetRoleMenusRequest) returns (GetRoleMenusResponse);
+  rpc AssignMenuToRole (AssignMenuToRoleRequest) returns (AssignMenuToRoleResponse);
+  rpc RemoveMenuFromRole (RemoveMenuFromRoleRequest) returns (RemoveMenuFromRoleResponse);
+  
+  // Menu mapping operations
+  rpc GetMenuCodeToIdMap (GetMenuCodeToIdMapRequest) returns (GetMenuCodeToIdMapResponse);
 }
 
 // User messages
@@ -314,6 +325,28 @@ message GetUserPermissionsResponse {
   repeated Permission permissions = 3;
 }
 
+// AssignRoleToUser
+message AssignRoleToUserRequest {
+  int32 user_id = 1;
+  int32 role_id = 2;
+}
+
+message AssignRoleToUserResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// RemoveRoleFromUser
+message RemoveRoleFromUserRequest {
+  int32 user_id = 1;
+  int32 role_id = 2;
+}
+
+message RemoveRoleFromUserResponse {
+  bool success = 1;
+  string message = 2;
+}
+
 // Menu operations messages
 message GetAllMenusRequest {}
 
@@ -374,4 +407,57 @@ message GetMenuTreeResponse {
   bool success = 1;
   string message = 2;
   repeated Menu menus = 3;
+}
+
+message GetUserMenuTreeRequest {
+  int32 user_id = 1;
+}
+
+message GetUserMenuTreeResponse {
+  bool success = 1;
+  string message = 2;
+  repeated Menu menus = 3;
+}
+
+// GetRoleMenus
+message GetRoleMenusRequest {
+  int32 role_id = 1;
+}
+
+message GetRoleMenusResponse {
+  bool success = 1;
+  string message = 2;
+  repeated Menu menus = 3;
+}
+
+// AssignMenuToRole
+message AssignMenuToRoleRequest {
+  int32 role_id = 1;
+  int32 menu_id = 2;
+}
+
+message AssignMenuToRoleResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// RemoveMenuFromRole
+message RemoveMenuFromRoleRequest {
+  int32 role_id = 1;
+  int32 menu_id = 2;
+}
+
+message RemoveMenuFromRoleResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// GetMenuCodeToIdMap
+message GetMenuCodeToIdMapRequest {
+}
+
+message GetMenuCodeToIdMapResponse {
+  bool success = 1;
+  string message = 2;
+  map<string, int32> menu_map = 3;
 }

@@ -4,6 +4,7 @@ using Backed.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Backed.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251107085455_AddRoleMenuRelation")]
+    partial class AddRoleMenuRelation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -77,178 +80,178 @@ namespace Backed.Migrations
                         {
                             Id = 1,
                             Code = "dashboard",
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2231),
+                            CreatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7914),
                             Icon = "ViewDashboard",
                             IsActive = true,
                             Name = "仪表盘",
                             Path = "/dashboard",
                             SortOrder = 1,
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2231)
+                            UpdatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7914)
                         },
                         new
                         {
                             Id = 2,
                             Code = "products",
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2234),
+                            CreatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7918),
                             Icon = "PackageVariant",
                             IsActive = true,
                             Name = "商品管理",
                             Path = "/products",
                             SortOrder = 2,
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2235)
+                            UpdatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7919)
                         },
                         new
                         {
                             Id = 3,
                             Code = "product_list",
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2238),
+                            CreatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7922),
                             Icon = "FormatListBulleted",
                             IsActive = true,
                             Name = "商品列表",
                             ParentId = 2,
                             Path = "/products/list",
                             SortOrder = 1,
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2238)
+                            UpdatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7922)
                         },
                         new
                         {
                             Id = 4,
                             Code = "product_category",
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2241),
+                            CreatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7925),
                             Icon = "Folder",
                             IsActive = true,
                             Name = "商品分类",
                             ParentId = 2,
                             Path = "/products/category",
                             SortOrder = 2,
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2241)
+                            UpdatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7926)
                         },
                         new
                         {
                             Id = 5,
                             Code = "orders",
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2243),
+                            CreatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7928),
                             Icon = "ClipboardList",
                             IsActive = true,
                             Name = "订单管理",
                             Path = "/orders",
                             SortOrder = 3,
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2244)
+                            UpdatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7929)
                         },
                         new
                         {
                             Id = 6,
                             Code = "order_list",
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2246),
+                            CreatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7932),
                             Icon = "FormatListBulleted",
                             IsActive = true,
                             Name = "订单列表",
                             ParentId = 5,
                             Path = "/orders/list",
                             SortOrder = 1,
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2247)
+                            UpdatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7932)
                         },
                         new
                         {
                             Id = 7,
                             Code = "order_returns",
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2249),
+                            CreatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7935),
                             Icon = "PackageDown",
                             IsActive = true,
                             Name = "退货申请",
                             ParentId = 5,
                             Path = "/orders/returns",
                             SortOrder = 2,
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2249)
+                            UpdatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7935)
                         },
                         new
                         {
                             Id = 8,
                             Code = "members",
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2252),
+                            CreatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7938),
                             Icon = "AccountMultiple",
                             IsActive = true,
                             Name = "会员管理",
                             Path = "/members",
                             SortOrder = 4,
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2252)
+                            UpdatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7938)
                         },
                         new
                         {
                             Id = 9,
                             Code = "member_list",
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2255),
+                            CreatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7941),
                             Icon = "FormatListBulleted",
                             IsActive = true,
                             Name = "会员列表",
                             ParentId = 8,
                             Path = "/members/list",
                             SortOrder = 1,
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2255)
+                            UpdatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7942)
                         },
                         new
                         {
                             Id = 10,
                             Code = "member_levels",
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2258),
+                            CreatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7945),
                             Icon = "Star",
                             IsActive = true,
                             Name = "会员等级",
                             ParentId = 8,
                             Path = "/members/levels",
                             SortOrder = 2,
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2258)
+                            UpdatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7945)
                         },
                         new
                         {
                             Id = 11,
                             Code = "settings",
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2261),
+                            CreatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7948),
                             Icon = "Cog",
                             IsActive = true,
                             Name = "系统设置",
                             Path = "/settings",
                             SortOrder = 5,
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2261)
+                            UpdatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7948)
                         },
                         new
                         {
                             Id = 12,
                             Code = "user_management",
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2264),
+                            CreatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7951),
                             Icon = "Account",
                             IsActive = true,
                             Name = "用户管理",
                             ParentId = 11,
                             Path = "/settings/users",
                             SortOrder = 1,
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2264)
+                            UpdatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7952)
                         },
                         new
                         {
                             Id = 13,
                             Code = "role_management",
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2266),
+                            CreatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7955),
                             Icon = "AccountArrowRight",
                             IsActive = true,
                             Name = "角色管理",
                             ParentId = 11,
                             Path = "/settings/roles",
                             SortOrder = 2,
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2267)
+                            UpdatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7955)
                         },
                         new
                         {
                             Id = 14,
                             Code = "menu_management",
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2269),
+                            CreatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7958),
                             Icon = "Menu",
                             IsActive = true,
                             Name = "菜单管理",
                             ParentId = 11,
                             Path = "/settings/menus",
                             SortOrder = 3,
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2270)
+                            UpdatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7959)
                         });
                 });
 
@@ -286,42 +289,42 @@ namespace Backed.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2055),
+                            CreatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7801),
                             Description = "Can view dashboard",
                             Name = "ViewDashboard",
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2056)
+                            UpdatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7801)
                         },
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2059),
+                            CreatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7804),
                             Description = "Can manage users",
                             Name = "ManageUsers",
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2060)
+                            UpdatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7805)
                         },
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2062),
+                            CreatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7807),
                             Description = "Can manage roles",
                             Name = "ManageRoles",
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2062)
+                            UpdatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7807)
                         },
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2064),
+                            CreatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7809),
                             Description = "Can manage products",
                             Name = "ManageProducts",
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2065)
+                            UpdatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7810)
                         },
                         new
                         {
                             Id = 5,
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2066),
+                            CreatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7812),
                             Description = "Can manage menus",
                             Name = "ManageMenus",
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2071)
+                            UpdatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7812)
                         });
                 });
 
@@ -359,18 +362,18 @@ namespace Backed.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(1839),
+                            CreatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7589),
                             Description = "Administrator role with full access",
                             Name = "Admin",
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(1839)
+                            UpdatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7590)
                         },
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(1842),
+                            CreatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7593),
                             Description = "Regular user role",
                             Name = "User",
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(1843)
+                            UpdatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7594)
                         });
                 });
 
@@ -402,120 +405,6 @@ namespace Backed.Migrations
                         .IsUnique();
 
                     b.ToTable("RoleMenus");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2365),
-                            MenuId = 1,
-                            RoleId = 1,
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2366)
-                        },
-                        new
-                        {
-                            Id = 2,
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2378),
-                            MenuId = 2,
-                            RoleId = 1,
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2379)
-                        },
-                        new
-                        {
-                            Id = 3,
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2380),
-                            MenuId = 3,
-                            RoleId = 1,
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2380)
-                        },
-                        new
-                        {
-                            Id = 4,
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2381),
-                            MenuId = 4,
-                            RoleId = 1,
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2382)
-                        },
-                        new
-                        {
-                            Id = 5,
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2383),
-                            MenuId = 5,
-                            RoleId = 1,
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2383)
-                        },
-                        new
-                        {
-                            Id = 6,
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2385),
-                            MenuId = 6,
-                            RoleId = 1,
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2385)
-                        },
-                        new
-                        {
-                            Id = 7,
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2386),
-                            MenuId = 7,
-                            RoleId = 1,
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2387)
-                        },
-                        new
-                        {
-                            Id = 8,
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2388),
-                            MenuId = 8,
-                            RoleId = 1,
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2388)
-                        },
-                        new
-                        {
-                            Id = 9,
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2389),
-                            MenuId = 9,
-                            RoleId = 1,
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2390)
-                        },
-                        new
-                        {
-                            Id = 10,
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2391),
-                            MenuId = 10,
-                            RoleId = 1,
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2392)
-                        },
-                        new
-                        {
-                            Id = 11,
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2393),
-                            MenuId = 11,
-                            RoleId = 1,
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2393)
-                        },
-                        new
-                        {
-                            Id = 12,
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2394),
-                            MenuId = 12,
-                            RoleId = 1,
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2395)
-                        },
-                        new
-                        {
-                            Id = 13,
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2396),
-                            MenuId = 13,
-                            RoleId = 1,
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2396)
-                        },
-                        new
-                        {
-                            Id = 14,
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2397),
-                            MenuId = 14,
-                            RoleId = 1,
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2397)
-                        });
                 });
 
             modelBuilder.Entity("Backed.Domain.Entities.RolePermission", b =>
@@ -551,58 +440,58 @@ namespace Backed.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2114),
+                            CreatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7851),
                             PermissionId = 1,
                             RoleId = 1,
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2114)
+                            UpdatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7851)
                         },
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2116),
+                            CreatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7854),
                             PermissionId = 2,
                             RoleId = 1,
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2116)
+                            UpdatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7854)
                         },
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2118),
+                            CreatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7856),
                             PermissionId = 3,
                             RoleId = 1,
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2118)
+                            UpdatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7857)
                         },
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2120),
+                            CreatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7859),
                             PermissionId = 4,
                             RoleId = 1,
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2121)
+                            UpdatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7859)
                         },
                         new
                         {
                             Id = 7,
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2122),
+                            CreatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7861),
                             PermissionId = 5,
                             RoleId = 1,
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2123)
+                            UpdatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7862)
                         },
                         new
                         {
                             Id = 5,
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2166),
+                            CreatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7864),
                             PermissionId = 1,
                             RoleId = 2,
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2166)
+                            UpdatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7864)
                         },
                         new
                         {
                             Id = 6,
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2168),
+                            CreatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7866),
                             PermissionId = 4,
                             RoleId = 2,
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2168)
+                            UpdatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7866)
                         });
                 });
 
@@ -652,11 +541,11 @@ namespace Backed.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2291),
+                            CreatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7981),
                             Email = "admin@example.com",
                             IsActive = true,
                             PasswordHash = "21232f297a57a5a743894a0e4a801fc3",
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2291),
+                            UpdatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(7981),
                             Username = "admin"
                         });
                 });
@@ -694,9 +583,9 @@ namespace Backed.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2356),
+                            CreatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(8028),
                             RoleId = 1,
-                            UpdatedAt = new DateTime(2025, 11, 8, 2, 56, 12, 99, DateTimeKind.Utc).AddTicks(2357),
+                            UpdatedAt = new DateTime(2025, 11, 7, 8, 54, 52, 816, DateTimeKind.Utc).AddTicks(8028),
                             UserId = 1
                         });
                 });

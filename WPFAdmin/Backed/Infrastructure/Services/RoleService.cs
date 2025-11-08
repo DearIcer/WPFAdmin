@@ -90,4 +90,44 @@ public class RoleService : IRoleService
             await _context.SaveChangesAsync();
         }
     }
+    
+    // Role-menu operations
+    public async Task<IEnumerable<Menu>> GetRoleMenusAsync(int roleId)
+    {
+        return await _context.RoleMenus
+            .Where(rm => rm.RoleId == roleId)
+            .Include(rm => rm.Menu)
+            .Select(rm => rm.Menu)
+            .ToListAsync();
+    }
+
+    public async Task AssignMenuAsync(int roleId, int menuId)
+    {
+        var existing = await _context.RoleMenus
+            .FirstOrDefaultAsync(rm => rm.RoleId == roleId && rm.MenuId == menuId);
+
+        if (existing == null)
+        {
+            var roleMenu = new RoleMenu
+            {
+                RoleId = roleId,
+                MenuId = menuId
+            };
+
+            _context.RoleMenus.Add(roleMenu);
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    public async Task RemoveMenuAsync(int roleId, int menuId)
+    {
+        var roleMenu = await _context.RoleMenus
+            .FirstOrDefaultAsync(rm => rm.RoleId == roleId && rm.MenuId == menuId);
+
+        if (roleMenu != null)
+        {
+            _context.RoleMenus.Remove(roleMenu);
+            await _context.SaveChangesAsync();
+        }
+    }
 }

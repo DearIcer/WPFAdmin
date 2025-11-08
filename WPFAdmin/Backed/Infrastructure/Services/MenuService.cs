@@ -87,4 +87,10 @@ public class MenuService : IMenuService
 
         return topLevelMenus;
     }
+    
+    public async Task<Dictionary<string, int>> GetMenuCodeToIdMapAsync()
+    {
+        var menus = await _context.Menus.ToListAsync();
+        return menus.ToDictionary(m => m.Code, m => m.Id);
+    }
 }

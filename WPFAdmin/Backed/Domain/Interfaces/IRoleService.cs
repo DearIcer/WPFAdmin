@@ -13,4 +13,9 @@ public interface IRoleService
     Task<IEnumerable<Permission>> GetRolePermissionsAsync(int roleId);
     Task AssignPermissionAsync(int roleId, int permissionId);
     Task RemovePermissionAsync(int roleId, int permissionId);
+    
+    // Role-menu operations
+    Task<IEnumerable<Menu>> GetRoleMenusAsync(int roleId);
+    Task AssignMenuAsync(int roleId, int menuId);
+    Task RemoveMenuAsync(int roleId, int menuId);
 }

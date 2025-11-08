@@ -15,6 +15,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<UserRole> UserRoles => Set<UserRole>();
     public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
     public DbSet<Menu> Menus => Set<Menu>();
+    public DbSet<RoleMenu> RoleMenus => Set<RoleMenu>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -71,6 +72,21 @@ public class ApplicationDbContext : DbContext
                 .WithMany(m => m.Children)
                 .HasForeignKey(m => m.ParentId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+        
+        // Configure RoleMenu entity
+        modelBuilder.Entity<RoleMenu>(entity =>
+        {
+            entity.HasKey(rm => rm.Id);
+            entity.HasIndex(rm => new { rm.RoleId, rm.MenuId }).IsUnique();
+            entity.HasOne(rm => rm.Role)
+                .WithMany(r => r.RoleMenus)
+                .HasForeignKey(rm => rm.RoleId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(rm => rm.Menu)
+                .WithMany(m => m.RoleMenus)
+                .HasForeignKey(rm => rm.MenuId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         // Seed default data
@@ -348,5 +364,20 @@ public class ApplicationDbContext : DbContext
                 UpdatedAt = DateTime.UtcNow
             }
         );
+        
+        // Assign all menus to admin role
+        var roleMenus = new List<RoleMenu>();
+        for (int i = 1; i <= 14; i++)
+        {
+            roleMenus.Add(new RoleMenu
+            {
+                Id = i,
+                RoleId = 1, // Admin role
+                MenuId = i,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            });
+        }
+        modelBuilder.Entity<RoleMenu>().HasData(roleMenus);
     }
 }

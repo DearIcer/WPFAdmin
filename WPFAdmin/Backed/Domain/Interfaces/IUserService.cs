@@ -13,4 +13,11 @@ public interface IUserService
     Task<bool> UserExistsAsync(string username);
     Task<IEnumerable<Role>> GetUserRolesAsync(int userId);
     Task<IEnumerable<Permission>> GetUserPermissionsAsync(int userId);
+    
+    // User-role operations
+    Task AssignRoleAsync(int userId, int roleId);
+    Task RemoveRoleAsync(int userId, int roleId);
+    
+    // User-menu operations
+    Task<IEnumerable<Menu>> GetUserMenusAsync(int userId);
 }
