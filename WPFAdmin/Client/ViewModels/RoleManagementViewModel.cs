@@ -5,7 +5,7 @@ using System.Windows;
 using System.Windows.Input;
 using Backed.Grpc;
 using Client.Models;
-using Grpc.Net.Client;
+using Client.Services;
 
 namespace Client.ViewModels;
 
@@ -26,9 +26,7 @@ public class RoleManagementViewModel : INotifyPropertyChanged
 
     public RoleManagementViewModel()
     {
-        // 初始化gRPC客户端
-        var channel = GrpcChannel.ForAddress("http://localhost:5101");
-        _rbacClient = new RBACService.RBACServiceClient(channel);
+        _rbacClient = GrpcClientService.Instance.RbacClient;
 
         // 初始化命令
         AddRoleCommand = new RelayCommand(AddRole);

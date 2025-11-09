@@ -5,8 +5,8 @@ using System.Windows;
 using System.Windows.Input;
 using Backed.Grpc;
 using Client.Models;
+using Client.Services;
 using Client.Views;
-using Grpc.Net.Client;
 
 namespace Client.ViewModels;
 
@@ -21,8 +21,7 @@ public class MainViewModel : INotifyPropertyChanged
     public MainViewModel()
     {
         // 初始化gRPC客户端
-        var channel = GrpcChannel.ForAddress("http://localhost:5101");
-        _rbacClient = new RBACService.RBACServiceClient(channel);
+        _rbacClient = GrpcClientService.Instance.RbacClient;
         
         // 初始化菜单项
         _menuItems = new ObservableCollection<MenuItem>();

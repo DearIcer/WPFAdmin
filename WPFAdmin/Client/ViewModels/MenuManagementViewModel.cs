@@ -5,7 +5,7 @@ using System.Windows;
 using System.Windows.Input;
 using Backed.Grpc;
 using Client.Models;
-using Grpc.Net.Client;
+using Client.Services;
 
 namespace Client.ViewModels;
 
@@ -18,8 +18,8 @@ public class MenuManagementViewModel : INotifyPropertyChanged
     private string _newItemId = string.Empty;
     private MenuItem? _parentItem;
     private bool _isEditing;
-    private Dictionary<string, int> _menuCodeToIdMap = new Dictionary<string, int>(); // 用于存储菜单Code到ID的映射
-    private MenuItem? _editingParentItem; // 用于编辑时的父级菜单
+    private Dictionary<string, int> _menuCodeToIdMap = new();
+    private MenuItem? _editingParentItem; 
 
     private readonly RBACService.RBACServiceClient _rbacClient;
 
@@ -27,9 +27,7 @@ public class MenuManagementViewModel : INotifyPropertyChanged
     {
         _menuItems = new ObservableCollection<MenuItem>();
         
-        // 初始化gRPC客户端
-        var channel = GrpcChannel.ForAddress("http://localhost:5101");
-        _rbacClient = new RBACService.RBACServiceClient(channel);
+        _rbacClient = GrpcClientService.Instance.RbacClient;
         
         LoadCommand = new RelayCommand(async () => await LoadMenuDataAsync());
         AddCommand = new RelayCommand(async () => await AddMenuItemAsync());
@@ -37,8 +35,7 @@ public class MenuManagementViewModel : INotifyPropertyChanged
         DeleteCommand = new RelayCommand(async () => await DeleteMenuItemAsync(), CanEditOrDelete);
         SaveCommand = new RelayCommand(async () => await SaveMenuItemAsync());
         CancelCommand = new RelayCommand(CancelEdit);
-
-        // 加载菜单数据
+        
         _ = LoadMenuDataAsync();
     }
 
@@ -195,7 +192,7 @@ public class MenuManagementViewModel : INotifyPropertyChanged
         {
             var menuItem = new MenuItem
             {
-                Id = grpcMenu.Code, // 使用Code作为Id，实际应用中应有独立的Id属性
+                Id = grpcMenu.Code, 
                 Code = grpcMenu.Code,
                 Name = grpcMenu.Name,
                 Icon = grpcMenu.Icon
@@ -274,7 +271,6 @@ public class MenuManagementViewModel : INotifyPropertyChanged
         NewItemName = SelectedItem.Name;
         NewItemIcon = SelectedItem.Icon;
         
-        // 设置当前父级菜单项（在实际应用中需要查找当前项的父级）
         EditingParentItem = FindParentMenuItem(SelectedItem);
     }
 

@@ -6,7 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Backed.Grpc;
 using Client.Models;
-using Grpc.Net.Client;
+using Client.Services;
 
 namespace Client.ViewModels;
 
@@ -28,9 +28,7 @@ public class UserManagementViewModel : INotifyPropertyChanged
     {
         _users = new ObservableCollection<User>();
         
-        // 初始化gRPC客户端
-        var channel = GrpcChannel.ForAddress("http://localhost:5101");
-        _rbacClient = new RBACService.RBACServiceClient(channel);
+        _rbacClient = GrpcClientService.Instance.RbacClient;
         
         LoadUsersCommand = new RelayCommand(async () => await LoadUsersAsync());
         AddUserCommand = new RelayCommand(async () => await AddUserAsync());

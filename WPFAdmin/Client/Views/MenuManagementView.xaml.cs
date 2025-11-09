@@ -47,15 +47,12 @@ public partial class MenuManagementView : UserControl
     
     private void OnMenuItemsChanged(object? sender, ObservableCollection<Models.MenuItem> menuItems)
     {
-        // 清空ComboBox项
         ParentComboBox.Items.Clear();
         EditingParentComboBox.Items.Clear();
         
-        // 添加"无父级"选项
         ParentComboBox.Items.Add(new ComboBoxItem { Content = "无父级", Tag = null });
         EditingParentComboBox.Items.Add(new ComboBoxItem { Content = "无父级", Tag = null });
         
-        // 递归添加所有菜单项到ComboBox
         AddMenuItemsToComboBox(ParentComboBox, menuItems, 0);
         AddMenuItemsToComboBox(EditingParentComboBox, menuItems, 0);
     }

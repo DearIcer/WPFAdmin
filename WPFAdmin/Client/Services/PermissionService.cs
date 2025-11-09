@@ -1,6 +1,6 @@
 using System.Text.Json;
 using Client.Models;
-using Grpc.Net.Client;
+using Client.Services;
 using Backed.Grpc;
 
 namespace Client.Services;
@@ -8,7 +8,7 @@ namespace Client.Services;
 public class PermissionService
 {
     private HashSet<string> _userPermissions;
-    private readonly RBACService.RBACServiceClient? _rbacClient;
+    private readonly RBACService.RBACServiceClient _rbacClient;
 
     public PermissionService()
     {
@@ -23,15 +23,7 @@ public class PermissionService
             "ManageMenus"
         };
         // 初始化gRPC客户端
-        try
-        {
-            var channel = GrpcChannel.ForAddress("http://localhost:5101");
-            _rbacClient = new RBACService.RBACServiceClient(channel);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"初始化gRPC客户端失败: {ex.Message}");
-        }
+        _rbacClient = GrpcClientService.Instance.RbacClient;
     }
 
     // 从后端获取用户权限
