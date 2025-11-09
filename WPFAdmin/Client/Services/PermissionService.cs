@@ -7,14 +7,11 @@ namespace Client.Services;
 
 public class PermissionService
 {
-    // 模拟当前用户的权限列表
-    // 在实际应用中，这些权限应该从后端API获取
     private HashSet<string> _userPermissions;
     private readonly RBACService.RBACServiceClient? _rbacClient;
 
     public PermissionService()
     {
-        // 默认给管理员所有权限
         _userPermissions = new HashSet<string>
         {
             "ViewDashboard",
@@ -25,7 +22,6 @@ public class PermissionService
             "ManageRoles",
             "ManageMenus"
         };
-        
         // 初始化gRPC客户端
         try
         {
@@ -91,19 +87,8 @@ public class PermissionService
         return filteredMenuItems;
     }
 
-    // 递归过滤菜单项
     private MenuItem? FilterMenuItemByPermissions(MenuItem item)
     {
-        // 检查是否有权限访问当前菜单项
-        // 菜单ID与权限名称对应关系：
-        // dashboard -> ViewDashboard
-        // products, product_list, product_category -> ManageProducts
-        // orders, order_list, order_returns -> ManageOrders
-        // members, member_list, member_levels -> ManageMembers
-        // user_management -> ManageUsers
-        // role_management -> ManageRoles
-        // menu_management -> ManageMenus
-
         var hasPermission = item.Code switch
         {
             "dashboard" => _userPermissions.Contains("ViewDashboard"),
@@ -116,7 +101,6 @@ public class PermissionService
             _ => false
         };
 
-        // 如果当前项没有权限且没有子项，则不显示
         if (!hasPermission && (item.Children == null || item.Children.Count == 0))
         {
             return null;
@@ -134,7 +118,6 @@ public class PermissionService
             Children = new System.Collections.ObjectModel.ObservableCollection<MenuItem>()
         };
 
-        // 如果有子项，递归过滤子项
         if (item.Children != null && item.Children.Count > 0)
         {
             foreach (var child in item.Children)
@@ -156,7 +139,6 @@ public class PermissionService
         return filteredItem;
     }
 
-    // 加载所有菜单项
     public List<MenuItem> LoadAllMenuItems()
     {
         return new List<MenuItem>

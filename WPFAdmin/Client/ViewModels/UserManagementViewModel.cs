@@ -65,7 +65,8 @@ public class UserManagementViewModel : INotifyPropertyChanged
             (EditUserCommand as RelayCommand)?.RaiseCanExecuteChanged();
             (DeleteUserCommand as RelayCommand)?.RaiseCanExecuteChanged();
             
-            if (_selectedUser != null && _isRolesLoaded)
+            // 只有在非编辑模式下才加载用户角色
+            if (_selectedUser != null && _isRolesLoaded && !IsEditing)
             {
                 _ = LoadUserRolesAsync(_selectedUser.Id);
             }

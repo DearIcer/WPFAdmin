@@ -23,8 +23,7 @@ public class UserService : IUserService
 
         if (user == null)
             return null;
-
-        // Hash the provided password and compare with stored hash
+        
         var hashedPassword = ComputeMd5Hash(password);
         if (user.PasswordHash != hashedPassword)
             return null;
@@ -54,8 +53,22 @@ public class UserService : IUserService
 
     public async Task UpdateAsync(User user)
     {
-        _context.Users.Update(user);
-        await _context.SaveChangesAsync();
+        // 先从数据库获取现有用户实体
+        var existingUser = await _context.Users.FindAsync(user.Id);
+        if (existingUser != null)
+        {
+            // 更新现有实体的属性，而不是附加新实体
+            existingUser.Username = user.Username;
+            existingUser.Email = user.Email;
+            existingUser.IsActive = user.IsActive;
+            existingUser.UpdatedAt = DateTime.UtcNow;
+            
+            await _context.SaveChangesAsync();
+        }
+        else
+        {
+            throw new InvalidOperationException($"User with ID {user.Id} not found");
+        }
     }
 
     public async Task DeleteAsync(int id)
@@ -137,26 +150,42 @@ public class UserService : IUserService
             .Select(ur => ur.RoleId)
             .ToListAsync();
 
-        // 获取角色关联的菜单ID
-        var menuIds = await _context.RoleMenus
+        // 获取角色关联的菜单ID（包括所有父级菜单）
+        var directMenuIds = await _context.RoleMenus
             .Where(rm => roleIds.Contains(rm.RoleId))
             .Select(rm => rm.MenuId)
             .Distinct()
             .ToListAsync();
 
-        // 获取菜单树
+        // 获取所有菜单以构建完整的菜单树
         var allMenus = await _context.Menus
             .Include(m => m.Children)
             .Where(m => m.IsActive)
             .OrderBy(m => m.SortOrder)
             .ToListAsync();
 
-        // 过滤出用户有权访问的菜单
-        var userMenus = allMenus.Where(m => menuIds.Contains(m.Id)).ToList();
+        // 构建完整的菜单ID集合，包括所有父级菜单
+        var allRelatedMenuIds = new HashSet<int>(directMenuIds);
+        var menuDict = allMenus.ToDictionary(m => m.Id);
+
+        // 添加所有父级菜单ID到集合中
+        foreach (var menuId in directMenuIds)
+        {
+            var currentMenuId = menuId;
+            while (menuDict.ContainsKey(currentMenuId) && menuDict[currentMenuId].ParentId.HasValue)
+            {
+                var parentId = menuDict[currentMenuId].ParentId.Value;
+                allRelatedMenuIds.Add(parentId);
+                currentMenuId = parentId;
+            }
+        }
+
+        // 过滤出用户有权访问的菜单（包括所有相关的父级菜单）
+        var userMenus = allMenus.Where(m => allRelatedMenuIds.Contains(m.Id)).ToList();
 
         // 构建菜单树结构
-        var topLevelMenus = userMenus.Where(m => m.ParentId == null).ToList();
-        var menuDict = userMenus.ToDictionary(m => m.Id);
+        var topLevelMenus = userMenus.Where(m => !m.ParentId.HasValue || !allRelatedMenuIds.Contains(m.ParentId.Value)).ToList();
+        var userMenuDict = userMenus.ToDictionary(m => m.Id);
 
         // 清除子菜单集合以确保干净状态
         foreach (var menu in userMenus)
@@ -167,9 +196,9 @@ public class UserService : IUserService
         // 构建父子关系
         foreach (var menu in userMenus)
         {
-            if (menu.ParentId.HasValue && menuDict.ContainsKey(menu.ParentId.Value))
+            if (menu.ParentId.HasValue && userMenuDict.ContainsKey(menu.ParentId.Value))
             {
-                menuDict[menu.ParentId.Value].Children.Add(menu);
+                userMenuDict[menu.ParentId.Value].Children.Add(menu);
             }
         }
 

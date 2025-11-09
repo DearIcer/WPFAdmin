@@ -149,11 +149,11 @@ public class MainViewModel : INotifyPropertyChanged
         CurrentView = menuItem.Code switch
         {
             "dashboard" => new DashboardView(),
-            "products" => new ProductsView(),
+            "product_list" => new ProductsView(),  
             "user_management" => new UserManagementView(),
             "role_management" => new RoleManagementView(),
             "menu_management" => new MenuManagementView(),
-            _ => CurrentView
+            _ => CurrentView  // 对于父级菜单或其他未指定的菜单项，保持当前视图不变
         };
     }
 

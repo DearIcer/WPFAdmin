@@ -1,4 +1,6 @@
 using System.Windows;
+using System.Windows.Interop;
+using System.Windows.Media;
 using Client.Views;
 
 namespace Client;
@@ -11,7 +13,6 @@ public partial class App : Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
-
         // 显示登录窗口
         var loginWindow = new Window
         {

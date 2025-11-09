@@ -5,7 +5,6 @@ namespace Backed.Domain.Interfaces;
 public interface IRoleService
 {
     Task<Role?> GetByIdAsync(int id);
-    Task<Role?> GetByNameAsync(string name);
     Task<IEnumerable<Role>> GetAllAsync();
     Task<Role> CreateAsync(Role role);
     Task UpdateAsync(Role role);

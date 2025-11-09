@@ -66,12 +66,10 @@ public class MenuService : IMenuService
             .Where(m => m.IsActive)
             .OrderBy(m => m.SortOrder)
             .ToListAsync();
-
-        // Build the tree structure
+        
         var topLevelMenus = menus.Where(m => m.ParentId == null).ToList();
         var menuDict = menus.ToDictionary(m => m.Id);
-
-        // Clear children collections to ensure clean state
+        
         foreach (var menu in menus)
         {
             menu.Children.Clear();
