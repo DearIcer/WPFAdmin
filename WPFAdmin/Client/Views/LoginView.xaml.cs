@@ -41,6 +41,9 @@ public partial class LoginView : UserControl
 
             if (response.Success)
             {
+                // 设置认证token
+                GrpcClientService.Instance.SetAuthToken(response.Token);
+                
                 var mainWindow = new MainWindow();
                 var mainViewModel = new MainViewModel();
                 mainViewModel.CurrentUser = response.User;

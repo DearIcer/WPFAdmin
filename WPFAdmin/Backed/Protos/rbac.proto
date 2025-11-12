@@ -4,7 +4,7 @@ option csharp_namespace = "Backed.Grpc";
 
 package rbac;
 
-// RBAC service definition
+// The RBAC service definition
 service RBACService {
   // User operations
   rpc AuthenticateUser (AuthenticateUserRequest) returns (AuthenticateUserResponse);
@@ -13,7 +13,7 @@ service RBACService {
   rpc CreateUser (CreateUserRequest) returns (CreateUserResponse);
   rpc UpdateUser (UpdateUserRequest) returns (UpdateUserResponse);
   rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse);
-  
+
   // Role operations
   rpc GetRole (GetRoleRequest) returns (GetRoleResponse);
   rpc GetAllRoles (GetAllRolesRequest) returns (GetAllRolesResponse);
@@ -23,82 +23,39 @@ service RBACService {
   rpc GetRolePermissions (GetRolePermissionsRequest) returns (GetRolePermissionsResponse);
   rpc AssignPermissionToRole (AssignPermissionToRoleRequest) returns (AssignPermissionToRoleResponse);
   rpc RemovePermissionFromRole (RemovePermissionFromRoleRequest) returns (RemovePermissionFromRoleResponse);
-  
+
   // Permission operations
   rpc GetPermission (GetPermissionRequest) returns (GetPermissionResponse);
   rpc GetAllPermissions (GetAllPermissionsRequest) returns (GetAllPermissionsResponse);
   rpc CreatePermission (CreatePermissionRequest) returns (CreatePermissionResponse);
   rpc UpdatePermission (UpdatePermissionRequest) returns (UpdatePermissionResponse);
   rpc DeletePermission (DeletePermissionRequest) returns (DeletePermissionResponse);
-  
+
   // User-role operations
   rpc GetUserRoles (GetUserRolesRequest) returns (GetUserRolesResponse);
   rpc GetUserPermissions (GetUserPermissionsRequest) returns (GetUserPermissionsResponse);
   rpc AssignRoleToUser (AssignRoleToUserRequest) returns (AssignRoleToUserResponse);
   rpc RemoveRoleFromUser (RemoveRoleFromUserRequest) returns (RemoveRoleFromUserResponse);
-  
+
+  // Role-menu operations
+  rpc GetRoleMenus (GetRoleMenusRequest) returns (GetRoleMenusResponse);
+  rpc AssignMenuToRole (AssignMenuToRoleRequest) returns (AssignMenuToRoleResponse);
+  rpc RemoveMenuFromRole (RemoveMenuFromRoleRequest) returns (RemoveMenuFromRoleResponse);
+
+  // Menu mapping operations
+  rpc GetMenuCodeToIdMap (GetMenuCodeToIdMapRequest) returns (GetMenuCodeToIdMapResponse);
+
   // Menu operations
   rpc GetAllMenus (GetAllMenusRequest) returns (GetAllMenusResponse);
+  rpc GetUserMenuTree (GetUserMenuTreeRequest) returns (GetUserMenuTreeResponse);
   rpc GetMenu (GetMenuRequest) returns (GetMenuResponse);
   rpc CreateMenu (CreateMenuRequest) returns (CreateMenuResponse);
   rpc UpdateMenu (UpdateMenuRequest) returns (UpdateMenuResponse);
   rpc DeleteMenu (DeleteMenuRequest) returns (DeleteMenuResponse);
   rpc GetMenuTree (GetMenuTreeRequest) returns (GetMenuTreeResponse);
-  rpc GetUserMenuTree (GetUserMenuTreeRequest) returns (GetUserMenuTreeResponse);
-  
-  // Role-menu operations
-  rpc GetRoleMenus (GetRoleMenusRequest) returns (GetRoleMenusResponse);
-  rpc AssignMenuToRole (AssignMenuToRoleRequest) returns (AssignMenuToRoleResponse);
-  rpc RemoveMenuFromRole (RemoveMenuFromRoleRequest) returns (RemoveMenuFromRoleResponse);
-  
-  // Menu mapping operations
-  rpc GetMenuCodeToIdMap (GetMenuCodeToIdMapRequest) returns (GetMenuCodeToIdMapResponse);
 }
 
-// User messages
-message User {
-  int32 id = 1;
-  string username = 2;
-  string email = 3;
-  bool is_active = 4;
-  int64 created_at = 5;
-  int64 updated_at = 6;
-}
-
-// Role messages
-message Role {
-  int32 id = 1;
-  string name = 2;
-  string description = 3;
-  int64 created_at = 4;
-  int64 updated_at = 5;
-}
-
-// Permission messages
-message Permission {
-  int32 id = 1;
-  string name = 2;
-  string description = 3;
-  int64 created_at = 4;
-  int64 updated_at = 5;
-}
-
-// Menu messages
-message Menu {
-  int32 id = 1;
-  string name = 2;
-  string code = 3;
-  string path = 4;
-  string icon = 5;
-  int32 parent_id = 6;
-  int32 sort_order = 7;
-  bool is_active = 8;
-  int64 created_at = 9;
-  int64 updated_at = 10;
-  repeated Menu children = 11;
-}
-
-// AuthenticateUser
+// Request and response messages for user operations
 message AuthenticateUserRequest {
   string username = 1;
   string password = 2;
@@ -108,9 +65,9 @@ message AuthenticateUserResponse {
   bool success = 1;
   string message = 2;
   User user = 3;
+  string token = 4;  // 添加 JWT token 字段
 }
 
-// GetUser
 message GetUserRequest {
   int32 id = 1;
 }
@@ -121,8 +78,8 @@ message GetUserResponse {
   User user = 3;
 }
 
-// GetAllUsers
-message GetAllUsersRequest {}
+message GetAllUsersRequest {
+}
 
 message GetAllUsersResponse {
   bool success = 1;
@@ -130,7 +87,6 @@ message GetAllUsersResponse {
   repeated User users = 3;
 }
 
-// CreateUser
 message CreateUserRequest {
   string username = 1;
   string email = 2;
@@ -143,7 +99,6 @@ message CreateUserResponse {
   User user = 3;
 }
 
-// UpdateUser
 message UpdateUserRequest {
   User user = 1;
 }
@@ -154,7 +109,6 @@ message UpdateUserResponse {
   User user = 3;
 }
 
-// DeleteUser
 message DeleteUserRequest {
   int32 id = 1;
 }
@@ -164,7 +118,7 @@ message DeleteUserResponse {
   string message = 2;
 }
 
-// GetRole
+// Request and response messages for role operations
 message GetRoleRequest {
   int32 id = 1;
 }
@@ -175,8 +129,8 @@ message GetRoleResponse {
   Role role = 3;
 }
 
-// GetAllRoles
-message GetAllRolesRequest {}
+message GetAllRolesRequest {
+}
 
 message GetAllRolesResponse {
   bool success = 1;
@@ -184,7 +138,6 @@ message GetAllRolesResponse {
   repeated Role roles = 3;
 }
 
-// CreateRole
 message CreateRoleRequest {
   string name = 1;
   string description = 2;
@@ -196,7 +149,6 @@ message CreateRoleResponse {
   Role role = 3;
 }
 
-// UpdateRole
 message UpdateRoleRequest {
   Role role = 1;
 }
@@ -207,7 +159,6 @@ message UpdateRoleResponse {
   Role role = 3;
 }
 
-// DeleteRole
 message DeleteRoleRequest {
   int32 id = 1;
 }
@@ -217,7 +168,37 @@ message DeleteRoleResponse {
   string message = 2;
 }
 
-// GetPermission
+message GetRolePermissionsRequest {
+  int32 role_id = 1;
+}
+
+message GetRolePermissionsResponse {
+  bool success = 1;
+  string message = 2;
+  repeated Permission permissions = 3;
+}
+
+message AssignPermissionToRoleRequest {
+  int32 role_id = 1;
+  int32 permission_id = 2;
+}
+
+message AssignPermissionToRoleResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message RemovePermissionFromRoleRequest {
+  int32 role_id = 1;
+  int32 permission_id = 2;
+}
+
+message RemovePermissionFromRoleResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// Request and response messages for permission operations
 message GetPermissionRequest {
   int32 id = 1;
 }
@@ -228,8 +209,8 @@ message GetPermissionResponse {
   Permission permission = 3;
 }
 
-// GetAllPermissions
-message GetAllPermissionsRequest {}
+message GetAllPermissionsRequest {
+}
 
 message GetAllPermissionsResponse {
   bool success = 1;
@@ -237,7 +218,6 @@ message GetAllPermissionsResponse {
   repeated Permission permissions = 3;
 }
 
-// CreatePermission
 message CreatePermissionRequest {
   string name = 1;
   string description = 2;
@@ -249,7 +229,6 @@ message CreatePermissionResponse {
   Permission permission = 3;
 }
 
-// UpdatePermission
 message UpdatePermissionRequest {
   Permission permission = 1;
 }
@@ -260,7 +239,6 @@ message UpdatePermissionResponse {
   Permission permission = 3;
 }
 
-// DeletePermission
 message DeletePermissionRequest {
   int32 id = 1;
 }
@@ -270,40 +248,7 @@ message DeletePermissionResponse {
   string message = 2;
 }
 
-// GetRolePermissions
-message GetRolePermissionsRequest {
-  int32 role_id = 1;
-}
-
-message GetRolePermissionsResponse {
-  bool success = 1;
-  string message = 2;
-  repeated Permission permissions = 3;
-}
-
-// AssignPermissionToRole
-message AssignPermissionToRoleRequest {
-  int32 role_id = 1;
-  int32 permission_id = 2;
-}
-
-message AssignPermissionToRoleResponse {
-  bool success = 1;
-  string message = 2;
-}
-
-// RemovePermissionFromRole
-message RemovePermissionFromRoleRequest {
-  int32 role_id = 1;
-  int32 permission_id = 2;
-}
-
-message RemovePermissionFromRoleResponse {
-  bool success = 1;
-  string message = 2;
-}
-
-// GetUserRoles
+// Request and response messages for user-role operations
 message GetUserRolesRequest {
   int32 user_id = 1;
 }
@@ -314,7 +259,6 @@ message GetUserRolesResponse {
   repeated Role roles = 3;
 }
 
-// GetUserPermissions
 message GetUserPermissionsRequest {
   int32 user_id = 1;
 }
@@ -325,7 +269,6 @@ message GetUserPermissionsResponse {
   repeated Permission permissions = 3;
 }
 
-// AssignRoleToUser
 message AssignRoleToUserRequest {
   int32 user_id = 1;
   int32 role_id = 2;
@@ -336,7 +279,6 @@ message AssignRoleToUserResponse {
   string message = 2;
 }
 
-// RemoveRoleFromUser
 message RemoveRoleFromUserRequest {
   int32 user_id = 1;
   int32 role_id = 2;
@@ -347,10 +289,62 @@ message RemoveRoleFromUserResponse {
   string message = 2;
 }
 
-// Menu operations messages
-message GetAllMenusRequest {}
+// Request and response messages for role-menu operations
+message GetRoleMenusRequest {
+  int32 role_id = 1;
+}
+
+message GetRoleMenusResponse {
+  bool success = 1;
+  string message = 2;
+  repeated Menu menus = 3;
+}
+
+message AssignMenuToRoleRequest {
+  int32 role_id = 1;
+  int32 menu_id = 2;
+}
+
+message AssignMenuToRoleResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message RemoveMenuFromRoleRequest {
+  int32 role_id = 1;
+  int32 menu_id = 2;
+}
+
+message RemoveMenuFromRoleResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// Request and response messages for menu mapping operations
+message GetMenuCodeToIdMapRequest {
+}
+
+message GetMenuCodeToIdMapResponse {
+  bool success = 1;
+  string message = 2;
+  map<string, int32> menu_map = 3;
+}
+
+// Request and response messages for menu operations
+message GetAllMenusRequest {
+}
 
 message GetAllMenusResponse {
+  bool success = 1;
+  string message = 2;
+  repeated Menu menus = 3;
+}
+
+message GetUserMenuTreeRequest {
+  int32 user_id = 1;
+}
+
+message GetUserMenuTreeResponse {
   bool success = 1;
   string message = 2;
   repeated Menu menus = 3;
@@ -401,7 +395,8 @@ message DeleteMenuResponse {
   string message = 2;
 }
 
-message GetMenuTreeRequest {}
+message GetMenuTreeRequest {
+}
 
 message GetMenuTreeResponse {
   bool success = 1;
@@ -409,55 +404,42 @@ message GetMenuTreeResponse {
   repeated Menu menus = 3;
 }
 
-message GetUserMenuTreeRequest {
-  int32 user_id = 1;
+// Entity messages
+message User {
+  int32 id = 1;
+  string username = 2;
+  string email = 3;
+  bool is_active = 4;
+  int64 created_at = 5;
+  int64 updated_at = 6;
 }
 
-message GetUserMenuTreeResponse {
-  bool success = 1;
-  string message = 2;
-  repeated Menu menus = 3;
+message Role {
+  int32 id = 1;
+  string name = 2;
+  string description = 3;
+  int64 created_at = 4;
+  int64 updated_at = 5;
 }
 
-// GetRoleMenus
-message GetRoleMenusRequest {
-  int32 role_id = 1;
+message Permission {
+  int32 id = 1;
+  string name = 2;
+  string description = 3;
+  int64 created_at = 4;
+  int64 updated_at = 5;
 }
 
-message GetRoleMenusResponse {
-  bool success = 1;
-  string message = 2;
-  repeated Menu menus = 3;
-}
-
-// AssignMenuToRole
-message AssignMenuToRoleRequest {
-  int32 role_id = 1;
-  int32 menu_id = 2;
-}
-
-message AssignMenuToRoleResponse {
-  bool success = 1;
-  string message = 2;
-}
-
-// RemoveMenuFromRole
-message RemoveMenuFromRoleRequest {
-  int32 role_id = 1;
-  int32 menu_id = 2;
-}
-
-message RemoveMenuFromRoleResponse {
-  bool success = 1;
-  string message = 2;
-}
-
-// GetMenuCodeToIdMap
-message GetMenuCodeToIdMapRequest {
-}
-
-message GetMenuCodeToIdMapResponse {
-  bool success = 1;
-  string message = 2;
-  map<string, int32> menu_map = 3;
+message Menu {
+  int32 id = 1;
+  string name = 2;
+  string code = 3;
+  string path = 4;
+  string icon = 5;
+  int32 parent_id = 6;
+  int32 sort_order = 7;
+  bool is_active = 8;
+  int64 created_at = 9;
+  int64 updated_at = 10;
+  repeated Menu children = 11;
 }

@@ -5,6 +5,7 @@ using Menu = Backed.Domain.Entities.Menu;
 using Permission = Backed.Domain.Entities.Permission;
 using Role = Backed.Domain.Entities.Role;
 using User = Backed.Domain.Entities.User;
+using Backed.Infrastructure.Services;
 
 namespace Backed.Services;
 
@@ -15,18 +16,21 @@ public class RBACService : Grpc.RBACService.RBACServiceBase
     private readonly IRoleService _roleService;
     private readonly IUserService _userService;
     private readonly IMenuService _menuService;
+    private readonly JwtService _jwtService;
 
     public RBACService(
         IUserService userService,
         IRoleService roleService,
         IPermissionService permissionService,
         IMenuService menuService,
+        JwtService jwtService,
         ILogger<RBACService> logger)
     {
         _userService = userService;
         _roleService = roleService;
         _permissionService = permissionService;
         _menuService = menuService;
+        _jwtService = jwtService;
         _logger = logger;
     }
 
@@ -44,12 +48,18 @@ public class RBACService : Grpc.RBACService.RBACServiceBase
                     Success = false,
                     Message = "Invalid username or password"
                 };
+            
+            var roles = await _userService.GetUserRolesAsync(user.Id);
+            var roleNames = roles.Select(r => r.Name).ToList();
+            
+            var token = _jwtService.GenerateToken(user.Id, user.Username, roleNames);
 
             return new AuthenticateUserResponse
             {
                 Success = true,
                 Message = "Authentication successful",
-                User = MapToGrpcUser(user)
+                User = MapToGrpcUser(user),
+                Token = token
             };
         }
         catch (Exception ex)
