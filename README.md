@@ -18,7 +18,7 @@ WPFAdmin 是一个现代化的后台管理系统，采用前后端分离的架�
 - 领域驱动设计 (DDD)
 
 ### 前端 (Client)
-- WPF (.NET 8.0)
+- WPF (.NET 10.0)
 - MVVM 设计模式
 - gRPC 客户端
 
